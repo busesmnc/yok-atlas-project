@@ -9,9 +9,9 @@ import sqlite3
 from selenium.webdriver.common.by import By
 
 # SSL bağlamını oluşturuyoruz
-ssl_context = ssl.create_default_context()
-ssl_context.check_hostname = False
-ssl_context.verify_mode = ssl.CERT_NONE
+# ssl_context = ssl.create_default_context()
+# ssl_context.check_hostname = False
+# ssl_context.verify_mode = ssl.CERT_NONE
 
 # URL'yi çekiyoruz
 url = 'https://yokatlas.yok.gov.tr/lisans-univ.php?u=1101'
@@ -34,11 +34,22 @@ for fak in fakulteler:
         fakult.append(fak)
 fakult.sort()
 fakult=list(enumerate(fakult,1))
-print(fakult)
+# print(fakult)
 
 conn=sqlite3.connect("yokatlas.db")
 cursor=conn.cursor()
-
+cursor.execute("""CREATE TABLE IF NOT EXISTS faculties (id INTEGER PRIMARY KEY, faculty_name VARCHAR(250))""")
+conn.commit()
+# cursor.executemany('''
+#     INSERT INTO faculties (id, faculty_name) VALUES (?, ?)
+# ''', fakult)
+# conn.commit()
+cursor.execute("SELECT * FROM faculties")
+data=cursor.fetchall()
+for d in data:
+    print(d)
+# Bağlantıyı kapat
+conn.close()
 # for i in last:
 #     browser=webdriver.Chrome()
 #     url=i[2]
