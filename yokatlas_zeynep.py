@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import ssl
 from selenium import webdriver
 import time
-import pyodbc
+# import pyodbc
 import sqlite3
 
 from selenium.webdriver.common.by import By
