@@ -1,5 +1,6 @@
 import pandas as pd
-from yokatlas_zeynep import fakulteler as data
+# from yokatlas_zeynep import fakult as data
+from database_test import deps as data
 
 df = pd.DataFrame(data)
 #DENEME 
