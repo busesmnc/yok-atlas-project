@@ -25,8 +25,6 @@ class Database_Creator():
 
     def create_database(self):
         db = "yok-atlas-project/yokatlas.db"
-        if os.path.exists(db):
-            os.remove(db)
         self.conn = sqlite3.connect(db)
         self.cursor = self.conn.cursor()
         self.create_tables()
@@ -54,9 +52,23 @@ class Database_Creator():
             self.close_pop_up()
             self.generate_data_for_years(d[0])
 
+    def check_existance(self):
+        data = WebDriverWait(self.browser, 10).until(EC.visibility_of_element_located((By.XPATH, """//*[@id="icerik_1000_1"]/table[2]/tbody/tr[6]/td[2]"""))).text
+        if data == "---":
+            return False
+        else:
+            return True
+
     def generate_data_for_years(self, department_id):
+        WebDriverWait(self.browser, 10).until(EC.element_to_be_clickable((By.XPATH, """/html/body/div[2]/div[1]/div[4]/span/span/a[1]"""))).click()
+        existance=self.check_existance()
         self.genders = []
-        self.get_gender(2023, department_id)
+        if existance:
+            self.get_gender(2023, department_id)
+        else:
+            self.index+=1
+            self.genders.append([self.index,department_id,2023,0,0])
+
         # Diğer yıllar için sırayla veriyi çekiyoruz
         for year, xpath in [(2022, "/html/body/div[2]/div[1]/div[6]/div[2]/h2/strong/a[2]"),
                             (2021, "/html/body/div[2]/div[1]/div[6]/div[2]/h2/strong/a[1]")]:
@@ -64,33 +76,40 @@ class Database_Creator():
             invalid_urls=["https://yokatlas.yok.gov.tr/2022/lisans-anasayfa.php","https://yokatlas.yok.gov.tr/lisans.php"]
             if self.browser.current_url not in invalid_urls:
                 self.close_pop_up()
-                self.get_gender(year, department_id)
+                WebDriverWait(self.browser, 10).until(EC.element_to_be_clickable((By.XPATH, """/html/body/div[2]/div[1]/div[4]/span/span/a[1]"""))).click()
+                existance=self.check_existance()
+                if existance:
+                    self.get_gender(year, department_id)
+                else:
+                    self.index+=1
+                    self.genders.append([self.index,department_id,year,0,0])
             else:
                 self.browser.back()
                 break
         self.insert_datas()
 
     def insert_datas(self):
-        self.cursor.executemany("INSERT INTO genders (id, department_id, year, male, female) VALUES (?, ?, ?, ?, ?)", self.genders)
-        self.conn.commit()
+        if self.genders:
+            self.cursor.executemany("INSERT INTO genders (id, department_id, year, male, female) VALUES (?, ?, ?, ?, ?)", self.genders)
+            self.conn.commit()
+        
 
     def get_gender(self, year, department_id):
         self.index += 1
-        WebDriverWait(self.browser, 30).until(EC.element_to_be_clickable((By.XPATH, """//*[@id="h1010"]/a"""))).click()
         
-        # Tablo elemanını bulana kadar bekliyoruz
-        WebDriverWait(self.browser, 30).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, "td.text-center.vert-align")))
+        # # Tablo elemanını bulana kadar bekliyoruz
+        # WebDriverWait(self.browser, 30).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, "td.text-center.vert-align")))
 
-        # Sayfa kaynağını çekiyoruz
-        page_source = self.browser.page_source
-        soup = BeautifulSoup(page_source, 'html.parser')
+        # # Sayfa kaynağını çekiyoruz
+        # page_source = self.browser.page_source
+        # soup = BeautifulSoup(page_source, 'html.parser')
 
-        # Tablo verilerini alıyoruz
-        table = soup.find_all("td", {"class": "text-center vert-align"})
-        gnd = [g.text.strip() for g in table]
+        # # Tablo verilerini alıyoruz
+        # table = soup.find_all("td", {"class": "text-center vert-align"})
+        # gnd = [g.text.strip() for g in table]
         
-        female = gnd[0]  # Kadın öğrenci sayısı
-        male = gnd[2]    # Erkek öğrenci sayısı
+        female = WebDriverWait(self.browser, 10).until(EC.visibility_of_element_located((By.XPATH, """//*[@id="icerik_1010"]/table/tbody/tr[1]/td[2]"""))).text  # Kadın öğrenci sayısı
+        male = WebDriverWait(self.browser, 10).until(EC.visibility_of_element_located((By.XPATH, """//*[@id="icerik_1010"]/table/tbody/tr[2]/td[2]"""))).text    # Erkek öğrenci sayısı
 
         # Veriyi listede tutuyoruz
         self.genders.append([self.index, department_id, year, male, female])
@@ -112,15 +131,15 @@ class Database_Creator():
 
         self.faculties.sort()
         self.faculties = list(enumerate(self.faculties, 1))
-        self.cursor.executemany('''INSERT INTO faculties (id, faculty_name) VALUES (?, ?)''', self.faculties)
-        self.conn.commit()
+        # self.cursor.executemany('''INSERT INTO faculties (id, faculty_name) VALUES (?, ?)''', self.faculties)
+        # self.conn.commit()
         
         i = 1
         for fd in self.f_data:
             self.cursor.execute("SELECT id FROM faculties WHERE faculty_name=?", (fd[1],))
             faculty_id = self.cursor.fetchone()[0]
-            self.cursor.execute("INSERT INTO departments (id, department_name, faculty_id, url) VALUES (?, ?, ?, ?)", (i, fd[0], faculty_id, fd[2]))
-            self.conn.commit()
+            # self.cursor.execute("INSERT INTO departments (id, department_name, faculty_id, url) VALUES (?, ?, ?, ?)", (i, fd[0], faculty_id, fd[2]))
+            # self.conn.commit()
             i += 1
         
         self.get_faculty_details()

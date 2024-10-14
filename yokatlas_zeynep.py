@@ -74,37 +74,37 @@ for fak in fakulteler:
         fakult.append(fak)
 fakult.sort()
 fakult=list(enumerate(fakult,1))
-db="yok-atlas-project/yokatlas.db"
-if os.path.exists(db):
-    os.remove(db)
-conn=sqlite3.connect(db)
-cursor=conn.cursor()
-create_tables(conn,cursor)
-cursor.executemany('''
-    INSERT INTO faculties (id, faculty_name) VALUES (?, ?)
-''', fakult)
-conn.commit()
-i=1
-for l in last:
-    cursor.execute("select id from faculties where faculty_name=?",(l[1],))
-    faculty_id=cursor.fetchall()[0][0]
-    cursor.execute("insert into departments (id,department_name,faculty_id,url) values(?,?,?,?)",(i,l[0],faculty_id,l[2]))
-    conn.commit()
-    i+=1
+# db="yok-atlas-project/yokatlas.db"
+# if os.path.exists(db):
+#     os.remove(db)
+# conn=sqlite3.connect(db)
+# cursor=conn.cursor()
+# create_tables(conn,cursor)
+# cursor.executemany('''
+#     INSERT INTO faculties (id, faculty_name) VALUES (?, ?)
+# ''', fakult)
+# conn.commit()
+# i=1
+# for l in last:
+#     cursor.execute("select id from faculties where faculty_name=?",(l[1],))
+#     faculty_id=cursor.fetchall()[0][0]
+#     cursor.execute("insert into departments (id,department_name,faculty_id,url) values(?,?,?,?)",(i,l[0],faculty_id,l[2]))
+#     conn.commit()
+#     i+=1
 
-cursor.execute("select * from departments")
-departments=cursor.fetchall()
-for d in departments:
-    url=d[3]
-    browser=webdriver.Chrome()
-    browser.get(url)
-    close_pop_up(browser)
-    generate_data_for_years(browser,d[0])
-    browser.close()
+# cursor.execute("select * from departments")
+# departments=cursor.fetchall()
+# for d in departments:
+#     url=d[3]
+#     browser=webdriver.Chrome()
+#     browser.get(url)
+#     close_pop_up(browser)
+#     generate_data_for_years(browser,d[0])
+#     browser.close()
 
-# cursor.execute("SELECT * FROM departments")
-# data=cursor.fetchall()
-# for d in data:
-#     print(d)
-# Bağlantıyı kapat
-conn.close()
+# # cursor.execute("SELECT * FROM departments")
+# # data=cursor.fetchall()
+# # for d in data:
+# #     print(d)
+# # Bağlantıyı kapat
+# conn.close()
