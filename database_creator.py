@@ -13,7 +13,7 @@ class Database_Creator():
     def __init__(self):
         self.cursor = ""
         self.conn = ""
-        self.browser = webdriver.Chrome()  # Tarayıcıyı sadece bir kez başlatıyoruz
+        self.browser = webdriver.Chrome()
         self.index = 0
         self.f_data = []
         self.faculties = []
@@ -36,6 +36,11 @@ class Database_Creator():
         self.conn.commit()
         self.cursor.execute("""CREATE TABLE IF NOT EXISTS genders (id INTEGER PRIMARY KEY, department_id INTEGER, year INTEGER, male INTEGER, female INTEGER)""")
         self.conn.commit()
+        self.cursor.execute("""CREATE TABLE IF NOT EXISTS base_points (id INTEGER PRIMARY KEY, department_id INTEGER, year INTEGER, point FLOAT)""")
+        self.conn.commit()
+        self.cursor.execute("""CREATE TABLE IF NOT EXISTS success_orders (id INTEGER PRIMARY KEY, department_id INTEGER, year INTEGER, success_order INTEGER)""")
+        self.conn.commit()
+
 
     def close_pop_up(self):
         try:
@@ -61,13 +66,21 @@ class Database_Creator():
 
     def generate_data_for_years(self, department_id):
         WebDriverWait(self.browser, 10).until(EC.element_to_be_clickable((By.XPATH, """/html/body/div[2]/div[1]/div[4]/span/span/a[1]"""))).click()
+        d_type=WebDriverWait(self.browser, 10).until(EC.visibility_of_element_located((By.XPATH, """//*[@id="icerik_1000_1"]/table[1]/tbody/tr[5]/td[2]"""))).text
+        self.cursor.execute(''' UPDATE departments SET d_type = ? WHERE id = ?;''', (d_type, department_id))
+        self.conn.commit()
         existance=self.check_existance()
         self.genders = []
+        self.base_points = []
+        self.success_orders = []
+        self.index+=1
         if existance:
             self.get_gender(2023, department_id)
+            self.get_points_and_orders(2023,department_id)
         else:
-            self.index+=1
             self.genders.append([self.index,department_id,2023,0,0])
+            self.base_points.append([self.index,department_id,2023,0])
+            self.success_orders.append([self.index,department_id,2023,0])
 
         # Diğer yıllar için sırayla veriyi çekiyoruz
         for year, xpath in [(2022, "/html/body/div[2]/div[1]/div[6]/div[2]/h2/strong/a[2]"),
@@ -78,41 +91,44 @@ class Database_Creator():
                 self.close_pop_up()
                 WebDriverWait(self.browser, 10).until(EC.element_to_be_clickable((By.XPATH, """/html/body/div[2]/div[1]/div[4]/span/span/a[1]"""))).click()
                 existance=self.check_existance()
+                self.index+=1
                 if existance:
                     self.get_gender(year, department_id)
+                    self.get_points_and_orders(year,department_id)
                 else:
-                    self.index+=1
                     self.genders.append([self.index,department_id,year,0,0])
+                    self.base_points.append([self.index,department_id,year,0])
+                    self.success_orders.append([self.index,department_id,year,0])
             else:
                 self.browser.back()
                 break
         self.insert_datas()
 
     def insert_datas(self):
-        if self.genders:
-            self.cursor.executemany("INSERT INTO genders (id, department_id, year, male, female) VALUES (?, ?, ?, ?, ?)", self.genders)
-            self.conn.commit()
+        # if self.genders:
+        #     self.cursor.executemany("INSERT INTO genders (id, department_id, year, male, female) VALUES (?, ?, ?, ?, ?)", self.genders)
+        #     self.conn.commit()
+        # if self.base_points:
+        #     self.cursor.executemany("INSERT INTO base_points (id, department_id, year, point) VALUES (?, ?, ?, ?)", self.base_points)
+        #     self.conn.commit()
+        # if self.success_orders:
+        #     self.cursor.executemany("INSERT INTO success_orders (id, department_id, year, success_order) VALUES (?, ?, ?, ?)", self.success_orders)
+        #     self.conn.commit()
+        pass
         
 
     def get_gender(self, year, department_id):
-        self.index += 1
-        
-        # # Tablo elemanını bulana kadar bekliyoruz
-        # WebDriverWait(self.browser, 30).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, "td.text-center.vert-align")))
-
-        # # Sayfa kaynağını çekiyoruz
-        # page_source = self.browser.page_source
-        # soup = BeautifulSoup(page_source, 'html.parser')
-
-        # # Tablo verilerini alıyoruz
-        # table = soup.find_all("td", {"class": "text-center vert-align"})
-        # gnd = [g.text.strip() for g in table]
-        
+   
         female = WebDriverWait(self.browser, 10).until(EC.visibility_of_element_located((By.XPATH, """//*[@id="icerik_1010"]/table/tbody/tr[1]/td[2]"""))).text  # Kadın öğrenci sayısı
         male = WebDriverWait(self.browser, 10).until(EC.visibility_of_element_located((By.XPATH, """//*[@id="icerik_1010"]/table/tbody/tr[2]/td[2]"""))).text    # Erkek öğrenci sayısı
 
-        # Veriyi listede tutuyoruz
         self.genders.append([self.index, department_id, year, male, female])
+
+    def get_points_and_orders(self,year,department_id):
+        base_point = WebDriverWait(self.browser, 10).until(EC.visibility_of_element_located((By.XPATH, """//*[@id="icerik_1000_3"]/table[1]/tbody/tr[1]/td[4]"""))).text
+        success_order = WebDriverWait(self.browser, 10).until(EC.visibility_of_element_located((By.XPATH, """//*[@id="icerik_1000_3"]/table[2]/tbody/tr[1]/td[4]"""))).text
+        self.base_points.append([self.index,department_id,year,base_point])
+        self.success_orders.append([self.index,department_id,year,success_order])
 
     def get_departments_and_faculties(self):
         url = 'https://yokatlas.yok.gov.tr/lisans-univ.php?u=1101'

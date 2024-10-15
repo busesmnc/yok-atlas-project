@@ -17,7 +17,12 @@ deps=cursor.fetchall()
 cursor.execute("select * from faculties")
 faculties=cursor.fetchall()
 # print(faculties)
-cursor.execute("drop table genders")
+cursor.execute('''
+    ALTER TABLE departments
+    ADD COLUMN d_type VARCHAR(5);
+''')
+
+# Commit the changes and close the connection
 conn.commit()
 cursor.execute("select * from genders")
 genders=cursor.fetchall()
