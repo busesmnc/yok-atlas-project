@@ -19,6 +19,15 @@ faculties=cursor.fetchall()
 # print(faculties)
 cursor.execute("select * from genders")
 genders=cursor.fetchall()
+
+cursor.execute("""CREATE TABLE IF NOT EXISTS correct_answers_for_say (id INTEGER PRIMARY KEY, department_name VARCHAR(250),faculty_id INTEGER, url VARCHAR(10000), tyt_türkce FLOAT, tyt_matematik FLOAT, tyt_fen FLOAT, tyt_sosyal FLOAT, ayt_matematik FLOAT, ayt_fizik FLOAT, ayt_kimya FLOAT, ayt_biyoloji FLOAT)""")
+conn.commit()
+cursor.execute("""CREATE TABLE IF NOT EXISTS correct_answers_for_ea (id INTEGER PRIMARY KEY, department_name VARCHAR(250),faculty_id INTEGER, url VARCHAR(10000), tyt_türkce FLOAT, tyt_matematik FLOAT, tyt_fen FLOAT, tyt_sosyal FLOAT, ayt_matematik FLOAT, ayt_coğrafya FLOAT, ayt_tarih FLOAT, ayt_edebiyat FLOAT)""")
+conn.commit()
+cursor.execute("""CREATE TABLE IF NOT EXISTS correct_answers_for_soz (id INTEGER PRIMARY KEY, department_name VARCHAR(250),faculty_id INTEGER, url VARCHAR(10000), tyt_türkce FLOAT, tyt_matematik FLOAT, tyt_fen FLOAT, tyt_sosyal FLOAT, ayt_cografya1 FLOAT, ayt_cografya2 FLOAT, ayt_din FLOAT, ayt_felsefe FLOAT, ayt_tarih1 FLOAT, ayt_tarih2 FLOAT, ayt_edebiyat FLOAT)""")
+conn.commit()
+cursor.execute("""CREATE TABLE IF NOT EXISTS correct_answers_for_dil (id INTEGER PRIMARY KEY, department_name VARCHAR(250),faculty_id INTEGER, url VARCHAR(10000), tyt_türkce FLOAT, tyt_matematik FLOAT, tyt_fen FLOAT, tyt_sosyal FLOAT, ydt_yabanci_dil FLOAT)""")
+conn.commit() 
 # print(genders)
 # for dep in deps:
 #     d_id=dep[0]
