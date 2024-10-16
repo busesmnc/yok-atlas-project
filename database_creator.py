@@ -15,6 +15,8 @@ class Database_Creator():
         self.conn = ""
         self.browser = webdriver.Chrome()
         self.index = 0
+        self.index2=0
+        self.index3=0
         self.f_data = []
         self.faculties = []
         self.departments = []
@@ -55,7 +57,7 @@ class Database_Creator():
             url = d[3]
             self.browser.get(url)
             self.close_pop_up()
-            self.generate_data_for_years(d[0])
+            self.generate_data_for_years(d[0],d[4])
 
     def check_existance(self):
         data = WebDriverWait(self.browser, 10).until(EC.visibility_of_element_located((By.XPATH, """//*[@id="icerik_1000_1"]/table[2]/tbody/tr[6]/td[2]"""))).text
@@ -64,11 +66,11 @@ class Database_Creator():
         else:
             return True
 
-    def generate_data_for_years(self, department_id):
+    def generate_data_for_years(self, department_id,department_type):
         WebDriverWait(self.browser, 10).until(EC.element_to_be_clickable((By.XPATH, """/html/body/div[2]/div[1]/div[4]/span/span/a[1]"""))).click()
-        d_type=WebDriverWait(self.browser, 10).until(EC.visibility_of_element_located((By.XPATH, """//*[@id="icerik_1000_1"]/table[1]/tbody/tr[5]/td[2]"""))).text
-        self.cursor.execute(''' UPDATE departments SET d_type = ? WHERE id = ?;''', (d_type, department_id))
-        self.conn.commit()
+        # d_type=WebDriverWait(self.browser, 10).until(EC.visibility_of_element_located((By.XPATH, """//*[@id="icerik_1000_1"]/table[1]/tbody/tr[5]/td[2]"""))).text
+        # self.cursor.execute(''' UPDATE departments SET d_type = ? WHERE id = ?;''', (d_type, department_id))
+        # self.conn.commit()
         existance=self.check_existance()
         self.genders = []
         self.base_points = []
@@ -77,10 +79,13 @@ class Database_Creator():
         if existance:
             self.get_gender(2023, department_id)
             self.get_points_and_orders(2023,department_id)
+            self.get_cities(2023,department_id)
+            self.get_regions(2023,department_id)
         else:
             self.genders.append([self.index,department_id,2023,0,0])
             self.base_points.append([self.index,department_id,2023,0])
             self.success_orders.append([self.index,department_id,2023,0])
+        self.get_correct_answers(2023,department_id,department_type)
 
         # Diğer yıllar için sırayla veriyi çekiyoruz
         for year, xpath in [(2022, "/html/body/div[2]/div[1]/div[6]/div[2]/h2/strong/a[2]"),
@@ -95,10 +100,13 @@ class Database_Creator():
                 if existance:
                     self.get_gender(year, department_id)
                     self.get_points_and_orders(year,department_id)
+                    self.get_cities(year,department_id)
+                    self.get_regions(year,department_id)
                 else:
                     self.genders.append([self.index,department_id,year,0,0])
                     self.base_points.append([self.index,department_id,year,0])
                     self.success_orders.append([self.index,department_id,year,0])
+                self.get_correct_answers(year,department_id,department_type)
             else:
                 self.browser.back()
                 break
@@ -129,6 +137,123 @@ class Database_Creator():
         success_order = WebDriverWait(self.browser, 10).until(EC.visibility_of_element_located((By.XPATH, """//*[@id="icerik_1000_3"]/table[2]/tbody/tr[1]/td[4]"""))).text
         self.base_points.append([self.index,department_id,year,base_point])
         self.success_orders.append([self.index,department_id,year,success_order])
+
+    def get_correct_answers(self,year,department_id,department_type):
+        WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.XPATH, """//*[@id="icerik_1210a"]/table""")))
+        correct_answers=[self.index,department_id,year]
+        page_source = self.browser.page_source
+        soup = BeautifulSoup(page_source, 'html.parser')
+        table = soup.find('div', {'id': 'icerik_1210a'})
+        rows=table.find_all('tr')
+        if len(rows)>1:
+            rows=rows[3:]
+            for row in rows:
+                subject=row.find_all('td')[0].text.split('(')[0].strip()
+                data=row.find_all('td')[1].text
+                data = data.replace(',', '.')
+                data=float(data)
+                if subject=="TYT Fen Bilimleri":
+                    tyt_fen=data
+                elif subject=="TYT Sosyal Bilimler":
+                    tyt_sosyal=data
+                elif subject=="TYT Temel Matematik":
+                    tyt_matematik=data
+                elif subject =="TYT Türkçe":
+                    tyt_turkce =data
+                elif subject =="AYT Coğrafya-1":
+                    ayt_cografya1=data
+                elif subject == "AYT Coğrafya-2":
+                    ayt_cografya2=data
+                elif subject == "AYT Din Kültürü ve Ahlak Bilgisi":
+                    ayt_din=data
+                elif subject== "AYT Felsefe Grubu":
+                    ayt_felsefe=data
+                elif subject == "AYT Tarih-1":
+                    ayt_tarih1=data
+                elif subject == "AYT Tarih-2":
+                    ayt_tarih2=data
+                elif subject=="AYT Türk Dili ve Edebiyatı":
+                    ayt_edebiyat=data
+                elif subject=="AYT Matematik":
+                    ayt_matematik=data
+                elif subject =="AYT Kimya":
+                    ayt_kimya=data
+                elif subject == "AYT Fizik":
+                    ayt_fizik=data
+                elif subject == "AYT Biyoloji":
+                    ayt_biyoloji=data
+                elif subject =="YDT Yabancı Dil":
+                    ydt_yabanci_dil=data
+            if department_type=="SAY":
+                correct_answers+=[tyt_fen,tyt_sosyal,tyt_matematik,tyt_turkce,ayt_biyoloji,ayt_fizik,ayt_kimya,ayt_matematik]
+            elif department_type=="EA":
+                correct_answers+=[tyt_fen,tyt_sosyal,tyt_matematik,tyt_turkce,ayt_cografya1,ayt_matematik,ayt_tarih1,ayt_edebiyat]
+            elif department_type=="SÖZ":
+                correct_answers+=[tyt_fen,tyt_sosyal,tyt_matematik,tyt_turkce,ayt_cografya1,ayt_cografya2,ayt_din,ayt_felsefe,ayt_tarih1,ayt_tarih2,ayt_edebiyat]
+            elif department_type=="DİL":
+                correct_answers+=[tyt_fen,tyt_sosyal,tyt_matematik,tyt_turkce,ydt_yabanci_dil]       
+        else:
+            if department_type=="SAY" or department_type=="EA":
+                correct_answers+=[0,0,0,0,0,0,0,0]
+            elif department_type=="SÖZ":
+                correct_answers+=[0,0,0,0,0,0,0,0,0,0,0]
+            elif department_type=="DİL":
+                correct_answers+=[0,0,0,0,0]
+        correct_answers=tuple(correct_answers)
+        # if department_type=="SAY":
+        #     self.cursor.execute("INSERT INTO correct_answers_for_say VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", correct_answers)
+        #     self.conn.commit()
+        # elif department_type=="EA":
+        #     self.cursor.execute("INSERT INTO correct_answers_for_ea VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", correct_answers)
+        #     self.conn.commit()
+        # elif department_type=="SÖZ":
+        #     self.cursor.execute("INSERT INTO correct_answers_for_soz VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", correct_answers)
+        #     self.conn.commit()
+        # elif department_type=="DİL":
+        #     self.cursor.execute("INSERT INTO correct_answers_for_dil VALUES (?, ?, ?, ?, ?, ?, ?, ?)", correct_answers)
+        #     self.conn.commit()
+        
+    def get_cities(self,year,department_id):
+        WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.XPATH, """//*[@id="icerik_1020c"]/table""")))
+        page_source = self.browser.page_source
+        soup = BeautifulSoup(page_source, 'html.parser')
+        table = soup.find('div', {'id': 'icerik_1020c'})
+        rows=rows = table.find_all('tr', attrs={'height': '20'})
+        if len(rows)>1:
+            rows=rows[1:]
+            for row in rows:
+                city=row.find_all('td')[0].text.strip()
+                student_number=row.find_all('td')[1].text
+                self.cursor.execute("select id from cities where city_name=?",(city,))
+                city_id=self.cursor.fetchone()
+                if city_id:
+                    city_id=city_id[0]
+                    self.index2+=1
+                    city_students=[self.index2,department_id,year,city_id,student_number]
+                    city_students=tuple(city_students)
+                    # self.cursor.execute("INSERT INTO student_cities VALUES (?, ?, ?, ?, ?)", city_students)
+                    # self.conn.commit()
+
+    def get_regions(self,year,department_id):
+        WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.XPATH, """//*[@id="icerik_1020ab"]/table""")))
+        page_source = self.browser.page_source
+        soup = BeautifulSoup(page_source, 'html.parser')
+        table = self.browser.find_element(By.XPATH,"""//*[@id="icerik_1020ab"]/table[2]""").get_attribute('outerHTML')
+        table = BeautifulSoup(table, 'html.parser')
+        rows = table.find_all('tr')
+        rows=rows[2:]
+        for row in rows:
+            region=row.find_all('td')[0].text.strip()
+            student_number=row.find_all('td')[1].text
+            self.cursor.execute("select id from Regions where region_name=?",(region,))
+            region_id=self.cursor.fetchone()
+            if region_id:
+                region_id=region_id[0]
+                self.index3+=1
+                region_students=[self.index3,department_id,year,region_id,student_number]
+                region_students=tuple(region_students)
+                # self.cursor.execute("INSERT INTO student_regions VALUES (?, ?, ?, ?, ?)", region_students)
+                # self.conn.commit()
 
     def get_departments_and_faculties(self):
         url = 'https://yokatlas.yok.gov.tr/lisans-univ.php?u=1101'
