@@ -7,19 +7,22 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 browser=webdriver.Chrome()
-url="https://yokatlas.yok.gov.tr/lisans.php?y=110110385"
+url="https://yokatlas.yok.gov.tr/lisans.php?y=110190112"
 browser.get(url)
 WebDriverWait(browser, 10).until(EC.element_to_be_clickable((By.XPATH, """/html/body/div[2]/div[1]/div[4]/span/span/a[1]"""))).click()
-WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, """//*[@id="icerik_1020ab"]/table[2]""")))
+WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, """//*[@id="icerik_2040"]""")))
 page_source = browser.page_source
 soup = BeautifulSoup(page_source, 'html.parser')
-table = browser.find_element(By.XPATH,"""//*[@id="icerik_1020ab"]/table[2]""").get_attribute('outerHTML')
-table = BeautifulSoup(table, 'html.parser')
+table = soup.find('div', {'id': 'icerik_2040'})
 rows = table.find_all('tr')
-rows=rows[2:]
-for row in rows:
-    region=row.find_all('td')[0].text
-    student_number=row.find_all('td')[1].text
-    print(region,student_number)
+leaving=0
+incoming=0
+if len(rows)>0:
+    rows=rows[1:]
+    for row in rows:
+        leaving+=int(row.find_all('td')[1].text)
+        incoming+=int(row.find_all('td')[2].text)
 
+print(incoming)
+print(leaving)
 browser.close()

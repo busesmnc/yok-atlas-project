@@ -21,6 +21,10 @@ class Database_Creator():
         self.faculties = []
         self.departments = []
         self.genders = []
+        self.total_student_number=[]
+        self.general_info = []
+        self.academicians=[]
+        self.exchange_program=[]
         self.create_database()
         self.get_departments_and_faculties()
         self.browser.close()  # İşlemler bittiğinde tarayıcıyı kapatıyoruz
@@ -32,15 +36,39 @@ class Database_Creator():
         self.create_tables()
 
     def create_tables(self):
+        self.cursor.execute("""CREATE TABLE Cities (id INTEGER PRIMARY KEY, city_name TEXT NOT NULL)""")
+        self.conn.commit()
+        self.cursor.execute("""CREATE TABLE Regions (id INTEGER PRIMARY KEY, region_name TEXT NOT NULL)""")
+        self.conn.commit()
         self.cursor.execute("""CREATE TABLE IF NOT EXISTS faculties (id INTEGER PRIMARY KEY, faculty_name VARCHAR(250))""")
         self.conn.commit()
         self.cursor.execute("""CREATE TABLE IF NOT EXISTS departments (id INTEGER PRIMARY KEY, department_name VARCHAR(250),faculty_id INTEGER, url VARCHAR(10000))""")
         self.conn.commit()
         self.cursor.execute("""CREATE TABLE IF NOT EXISTS genders (id INTEGER PRIMARY KEY, department_id INTEGER, year INTEGER, male INTEGER, female INTEGER)""")
         self.conn.commit()
+        self.cursor.execute("""CREATE TABLE IF NOT EXISTS correct_answers_for_say (id INTEGER PRIMARY KEY, department_id INTEGER, year INTEGER, tyt_fen FLOAT, tyt_sosyal FLOAT, tyt_matematik FLOAT, tyt_turkce FLOAT, ayt_biyoloji FLOAT, ayt_fizik FLOAT, ayt_kimya FLOAT, ayt_matematik FLOAT)""")
+        self.conn.commit()
+        self.cursor.execute("""CREATE TABLE IF NOT EXISTS correct_answers_for_ea (id INTEGER PRIMARY KEY, department_id INTEGER, year INTEGER, tyt_fen FLOAT, tyt_sosyal FLOAT, tyt_matematik FLOAT, tyt_turkce FLOAT, ayt_cografya1 FLOAT, ayt_matematik FLOAT, ayt_tarih1 FLOAT, ayt_edebiyat FLOAT)""")
+        self.conn.commit()
+        self.cursor.execute("""CREATE TABLE IF NOT EXISTS correct_answers_for_soz (id INTEGER PRIMARY KEY, department_id INTEGER, year INTEGER, tyt_fen FLOAT, tyt_sosyal FLOAT, tyt_matematik FLOAT, tyt_turkce FLOAT, ayt_cografya1 FLOAT, ayt_cografya2 FLOAT, ayt_din FLOAT, ayt_felsefe FLOAT, ayt_tarih1 FLOAT, ayt_tarih2 FLOAT, ayt_edebiyat FLOAT)""")
+        self.conn.commit()
+        self.cursor.execute("""CREATE TABLE IF NOT EXISTS correct_answers_for_dil (id INTEGER PRIMARY KEY, department_id INTEGER, year INTEGER, tyt_fen FLOAT, tyt_sosyal FLOAT, tyt_matematik FLOAT, tyt_turkce FLOAT, ydt_yabanci_dil FLOAT)""")
+        self.conn.commit() 
+        self.cursor.execute("""CREATE TABLE IF NOT EXISTS student_cities (id INTEGER PRIMARY KEY, department_id INTEGER, year INTEGER, city varchar(50), student_number integer)""")
+        self.conn.commit() 
+        self.cursor.execute("""CREATE TABLE IF NOT EXISTS student_regions (id INTEGER PRIMARY KEY, department_id INTEGER, year INTEGER, region varchar(50), student_number integer)""")
+        self.conn.commit()
         self.cursor.execute("""CREATE TABLE IF NOT EXISTS base_points (id INTEGER PRIMARY KEY, department_id INTEGER, year INTEGER, point FLOAT)""")
         self.conn.commit()
         self.cursor.execute("""CREATE TABLE IF NOT EXISTS success_orders (id INTEGER PRIMARY KEY, department_id INTEGER, year INTEGER, success_order INTEGER)""")
+        self.conn.commit()
+        self.cursor.execute("""CREATE TABLE IF NOT EXISTS general_infos (id INTEGER PRIMARY KEY, department_id INTEGER, year INTEGER, prefered INTEGER, quota INTEGER, s_number INTEGER)""")
+        self.conn.commit()
+        self.cursor.execute("""CREATE TABLE IF NOT EXISTS total_student_number (id INTEGER PRIMARY KEY, department_id INTEGER, year INTEGER, male INTEGER, female INTEGER, total_number INTEGER)""")
+        self.conn.commit()
+        self.cursor.execute("""CREATE TABLE IF NOT EXISTS academicians (id INTEGER PRIMARY KEY, department_id INTEGER, year INTEGER, proffesor INTEGER, assoc_prof INTEGER, phd INTEGER)""")
+        self.conn.commit()
+        self.cursor.execute("""CREATE TABLE IF NOT EXISTS exchange_program (id INTEGER PRIMARY KEY, department_id INTEGER, year INTEGER, leaving INTEGER, incoming INTEGER)""")
         self.conn.commit()
 
 
@@ -75,6 +103,10 @@ class Database_Creator():
         self.genders = []
         self.base_points = []
         self.success_orders = []
+        self.general_info = []
+        self.total_student_number=[]
+        self.academicians=[]
+        self.exchange_program=[]
         self.index+=1
         if existance:
             self.get_gender(2023, department_id)
@@ -86,6 +118,10 @@ class Database_Creator():
             self.base_points.append([self.index,department_id,2023,0])
             self.success_orders.append([self.index,department_id,2023,0])
         self.get_correct_answers(2023,department_id,department_type)
+        self.get_general_info(2023,department_id)
+        self.get_total_student_number(2023,department_id)
+        self.get_academicians(2023,department_id)
+        self.get_exchange_program(2023,department_id)
 
         # Diğer yıllar için sırayla veriyi çekiyoruz
         for year, xpath in [(2022, "/html/body/div[2]/div[1]/div[6]/div[2]/h2/strong/a[2]"),
@@ -107,6 +143,10 @@ class Database_Creator():
                     self.base_points.append([self.index,department_id,year,0])
                     self.success_orders.append([self.index,department_id,year,0])
                 self.get_correct_answers(year,department_id,department_type)
+                self.get_general_info(year,department_id)
+                self.get_total_student_number(year,department_id)
+                self.get_academicians(year,department_id)
+                self.get_exchange_program(year,department_id)
             else:
                 self.browser.back()
                 break
@@ -122,7 +162,19 @@ class Database_Creator():
         # if self.success_orders:
         #     self.cursor.executemany("INSERT INTO success_orders (id, department_id, year, success_order) VALUES (?, ?, ?, ?)", self.success_orders)
         #     self.conn.commit()
-        pass
+        # if self.general_info:
+        #     self.cursor.executemany("INSERT INTO general_infos (id, department_id, year, prefered ,quota,s_number) VALUES (?, ?, ?, ?,?,?)", self.general_info)
+        #     self.conn.commit()
+        # if self.total_student_number:
+        #     self.cursor.executemany("INSERT INTO total_student_number (id, department_id, year, male ,female,total_number) VALUES (?, ?, ?, ?,?,?)", self.total_student_number)
+        #     self.conn.commit()
+        if self.academicians:
+            self.cursor.executemany("INSERT INTO academicians (id, department_id, year, proffesor, assoc_prof, phd) VALUES (?, ?, ?, ?,?,?)", self.academicians)
+            self.conn.commit()
+        # if self.exchange_program:
+        #     self.cursor.executemany("INSERT INTO exchange_program (id, department_id, year, leaving, incoming) VALUES (?, ?, ?, ?,?)", self.exchange_program)
+        #     self.conn.commit()
+        # pass
         
 
     def get_gender(self, year, department_id):
@@ -137,6 +189,61 @@ class Database_Creator():
         success_order = WebDriverWait(self.browser, 10).until(EC.visibility_of_element_located((By.XPATH, """//*[@id="icerik_1000_3"]/table[2]/tbody/tr[1]/td[4]"""))).text
         self.base_points.append([self.index,department_id,year,base_point])
         self.success_orders.append([self.index,department_id,year,success_order])
+
+    def get_general_info(self,year,department_id):
+        quota= WebDriverWait(self.browser, 10).until(EC.visibility_of_element_located((By.XPATH, """//*[@id="icerik_1000_2"]/table/tbody/tr[5]/td[2]"""))).text
+        prefered= WebDriverWait(self.browser, 10).until(EC.visibility_of_element_located((By.XPATH, """//*[@id="icerik_1080"]/table[1]/tbody/tr[1]/td[2]"""))).text
+        student_number= WebDriverWait(self.browser, 10).until(EC.visibility_of_element_located((By.XPATH, """//*[@id="icerik_1000_2"]/table/tbody/tr[5]/td[3]"""))).text
+        if student_number=="---":
+            student_number=0
+        self.general_info.append([self.index,department_id,year,prefered,quota,student_number])
+
+    def get_total_student_number(self,year,department_id):
+        male=0
+        female=0
+        total=0
+        page_source = self.browser.page_source
+        soup = BeautifulSoup(page_source, 'html.parser')
+        table = soup.find('div', {'id': 'icerik_2010'})
+        rows=table.find_all('tr')
+        if len(rows)>1:
+            rows=rows[1:]
+            for row in rows:
+                gender=row.find_all('td')[0].text.split('(')[0].strip()
+                data=row.find_all('td')[1].text
+                if gender=="Erkek":
+                    male=data
+                elif gender=="Kız":
+                    female=data
+                elif gender=="Toplam":
+                    total=data
+        self.total_student_number.append([self.index,department_id,year,male,female,total])
+
+    def get_academicians(self,year,department_id):
+        prof=WebDriverWait(self.browser, 10).until(EC.visibility_of_element_located((By.XPATH, """//*[@id="icerik_2050"]/table/tbody/tr[1]/td[2]"""))).text
+        assoc=WebDriverWait(self.browser, 10).until(EC.visibility_of_element_located((By.XPATH, """//*[@id="icerik_2050"]/table/tbody/tr[2]/td[2]"""))).text
+        phd=WebDriverWait(self.browser, 10).until(EC.visibility_of_element_located((By.XPATH, """//*[@id="icerik_2050"]/table/tbody/tr[3]/td[2]"""))).text
+        if prof=="---":
+            prof=0
+        if assoc=="---":
+            assoc=0
+        if phd=="---":
+            phd=0
+        self.academicians.append([self.index,department_id,year,prof,assoc,phd])
+
+    def get_exchange_program(self,year,department_id):
+        page_source = self.browser.page_source
+        soup = BeautifulSoup(page_source, 'html.parser')
+        table = soup.find('div', {'id': 'icerik_2040'})
+        rows=table.find_all('tr')
+        leaving=0
+        incoming=0
+        if len(rows)>0:
+            rows=rows[1:]
+            for row in rows:
+                leaving+=int(row.find_all('td')[1].text)
+                incoming+=int(row.find_all('td')[2].text)
+        self.exchange_program.append([self.index,department_id,year,leaving,incoming])
 
     def get_correct_answers(self,year,department_id,department_type):
         WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.XPATH, """//*[@id="icerik_1210a"]/table""")))
@@ -272,8 +379,8 @@ class Database_Creator():
 
         self.faculties.sort()
         self.faculties = list(enumerate(self.faculties, 1))
-        # self.cursor.executemany('''INSERT INTO faculties (id, faculty_name) VALUES (?, ?)''', self.faculties)
-        # self.conn.commit()
+        self.cursor.executemany('''INSERT INTO faculties (id, faculty_name) VALUES (?, ?)''', self.faculties)
+        self.conn.commit()
         
         i = 1
         for fd in self.f_data:
