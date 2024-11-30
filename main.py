@@ -320,3 +320,4 @@ plot_gender_trends(df, level='department', name='Bilgisayar Mühendisliği')
 
 # Fakülte bazında
 plot_gender_trends(df, level='faculty', name='Mühendislik Fakültesi')
+
