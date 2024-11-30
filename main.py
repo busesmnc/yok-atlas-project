@@ -1,21 +1,15 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-# from yokatlas_zeynep import fakult as data
-from database_test import gender_table as data
 
-print("hi")
-columns_for_genders = ['faculty_id', 'faculty_name', 'department_id', 'department_name',
-                       'department_type', 'year', 'male', 'female', 'total_male_number',
-                       'total_female_number', 'total_student_number']
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', None)
-pd.set_option('display.max_rows', 20)
+pd.set_option('display.max_rows', None)
 pd.set_option('display.float_format', lambda x: '%.3f' % x)
 
 # df = pd.DataFrame(data, columns=columns_for_genders)
-csv_file_path = "total_std_gndr.csv"
+csv_file_path = "general_data.csv"
 
 # CSV dosyasını DataFrame'e dönüştür
 df = pd.read_csv(csv_file_path)
@@ -36,11 +30,11 @@ def check_df(dataframe, head=5):
     print(dataframe.isnull().sum())
 
 
-check_df(df)
+# check_df(df)
 # print(df.head())
 # print(df.info())
 
-
+""""""
 def grab_col_names(dataframe, cat_th=10, car_th=20):
     """
 
@@ -98,51 +92,34 @@ def grab_col_names(dataframe, cat_th=10, car_th=20):
 
     return cat_cols, num_cols, cat_but_car
 
-
 # cat_cols, num_cols, cat_but_car = grab_col_names(df)
 
 # print(cat_cols)
 # print(num_cols)
 # print(cat_but_car)
-num_cols = ['total_male_number', 'total_female_number']
-
-print("ortalama cinsiyet sayısı")
-def target_summary_with_num(dataframe, target, numerical_col):
-    print(dataframe.groupby(target).agg({numerical_col: "mean"}), end="\n\n\n")
 
 
-print("fakülte ortalama cinsiyet sayısı")
+num_cols = ["total_male_number", "total_female_number"]
 
+print("toplam cinsiyet sayısı")
+
+def target_summary_with_num(dataframe, target, numerical_col, year):
+    print(f"year: {year} için {numerical_col} ortalamaları")
+    filtered_df = dataframe[dataframe["year"] == year]  # Filter dataframe by year
+    print(filtered_df.groupby(target).agg({numerical_col: "sum"}), end="\n\n\n")
+
+
+# Loop through the column names and call the function
 for col in num_cols:
-    target_summary_with_num(df, 'faculty_name', col)
+    print(f"{col} için fakülte ortalama cinsiyet sayısı:")
+    target_summary_with_num(df, 'faculty_name', col, 2023)
 
-print("departman ortalama cinsiyet sayısı")
-
-for col in num_cols:
-    target_summary_with_num(df, 'department_name', col)
 
 print("yıllık ortalama cinsiyet sayısı")
 for col in num_cols:
-    target_summary_with_num(df, 'year', col)
+    target_summary_with_num(df, 'year', col, 2023)
 
-# gender percentage based on faculties
-"""
 
-df['total_students'] = df['male'] + df['female']
-
-df['male_percentage'] = (df['male'] / df['total_students']) * 100
-df['female_percentage'] = (df['female'] / df['total_students']) * 100
-
-faculty_gender_percentage = df.groupby("faculty_name").agg({
-    'male': 'sum',
-    'female': 'sum',
-    'total_students': 'sum'
-})
-
-faculty_gender_percentage['male_percentage'] = (faculty_gender_percentage['male'] / faculty_gender_percentage['total_students']) * 100
-faculty_gender_percentage['female_percentage'] = (faculty_gender_percentage['female'] / faculty_gender_percentage['total_students']) * 100
-
-print(faculty_gender_percentage)
 """
 # outlier check
 """ 
@@ -237,16 +214,6 @@ print(f"Female percentage: {overall_percentage['female_percentage']:.2f}%")
 
 
 def plot_gender_trends_bar(df, department_name):
-    """
-    Verilen departman için yıllık erkek ve kadın öğrenci sayılarındaki değişimi bar grafiği ile gösterir.
-
-    Args:
-        df (pd.DataFrame): Veri çerçevesi (DataFrame)
-        department_name (str): Grafiği çizmek istediğiniz departmanın adı
-
-    Returns:
-        None: Grafik gösterimi
-    """
     department_data = df[df['department_name'] == department_name]
 
     department_data_yearly = department_data.groupby('year').agg(
@@ -269,22 +236,9 @@ def plot_gender_trends_bar(df, department_name):
 # Örnek kullanım:
 plot_gender_trends_bar(df, 'Bilgisayar Mühendisliği')
 
-import pandas as pd
-import matplotlib.pyplot as plt
-
 
 def plot_gender_trends(df, level='department', name=None):
-    """
-    Verilen departman veya fakülte için yıllık erkek ve kadın öğrenci sayılarındaki değişimi gösterir.
 
-    Args:
-        df (pd.DataFrame): Veri çerçevesi (DataFrame)
-        level (str): Analiz yapılacak düzey ('department' veya 'faculty')
-        name (str): Düzey bazında analiz edilecek departman veya fakülte adı
-
-    Returns:
-        None: Grafik gösterimi
-    """
     if level == 'department':
         filtered_data = df[df['department_name'] == name]
     elif level == 'faculty':
@@ -313,11 +267,4 @@ def plot_gender_trends(df, level='department', name=None):
     plt.xticks(filtered_data_yearly['year'], rotation=45)
     plt.tight_layout()
     plt.show()
-
-
-# Departman bazında
-plot_gender_trends(df, level='department', name='Bilgisayar Mühendisliği')
-
-# Fakülte bazında
-plot_gender_trends(df, level='faculty', name='Mühendislik Fakültesi')
-
+"""
