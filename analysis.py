@@ -7,7 +7,7 @@ pd.set_option('display.width', None)
 pd.set_option('display.max_rows', None)
 pd.set_option('display.float_format', lambda x: '%.3f' % x)
 
-csv_file_path = "general_data.csv"
+csv_file_path = "yok_atlas_data.csv"
 
 df = pd.read_csv(csv_file_path)
 
@@ -131,13 +131,11 @@ plot_gender_change(
     group_name="Matematik Mühendisliği",
     male_cols=['total_male_number_2021', 'total_male_number_2022', 'total_male_number_2023'],
     female_cols=['total_female_number_2021', 'total_female_number_2022', 'total_female_number_2023']
-
 )
 
 """
 
 # ##########################################################
-
 
 
 
