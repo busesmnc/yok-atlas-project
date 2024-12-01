@@ -29,6 +29,7 @@ def success_orders_for_departments(department_types,years):
     for d_type in department_types:
         for year in years:
             d_type=d_type.upper().strip()
+            d_type = "DİL" if d_type == "DIL" else d_type
             year=int(year)
             cursor.execute("""
             SELECT department_name, success_order
@@ -54,6 +55,7 @@ def base_points_for_departments(department_types,years):
     for d_type in department_types:
         for year in years:
             d_type=d_type.upper().strip()
+            d_type = "DİL" if d_type == "DIL" else d_type
             year=int(year)
             cursor.execute("""
             SELECT department_name, base_point
@@ -79,6 +81,7 @@ def correct_answers_for_departments(department_types,years):
     for d_type in department_types:
         for year in years:
             d_type=d_type.upper().strip()
+            d_type = "DİL" if d_type == "DIL" else d_type
             year=int(year)
             cursor.execute("""
             SELECT department_name,total_correct_answers FROM
