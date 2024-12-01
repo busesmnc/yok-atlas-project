@@ -1,5 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import unicodedata
 import seaborn as sns
 
 pd.set_option('display.max_columns', None)
@@ -7,7 +8,7 @@ pd.set_option('display.width', None)
 pd.set_option('display.max_rows', None)
 pd.set_option('display.float_format', lambda x: '%.3f' % x)
 
-csv_file_path = "yok_atlas_data.csv"
+csv_file_path = "ytu_general_data.csv"
 
 df = pd.read_csv(csv_file_path)
 
@@ -29,6 +30,7 @@ def check_df(dataframe, head=5):
 
 # check_df(df)
 
+# ############################################### gender_change_analysis
 print("GENDER ANALYSIS")
 
 
@@ -47,7 +49,6 @@ def gender_change_analysis(dataframe, group_col, years_col='year', male_col='tot
         pd.DataFrame: Yıllara göre toplam cinsiyet ve yüzdesel değişimleri içeren tablo.
     """
 
-    # Yıllara göre toplamları gruplandır
     yearly_totals = dataframe.groupby([group_col, years_col])[[male_col, female_col]].sum().reset_index()
 
     # Pivot tablo oluştur
@@ -134,8 +135,174 @@ plot_gender_change(
 )
 
 """
+# ############################################### college_gender_change_analysis
 
-# ##########################################################
+def analyze_gender_changes(data):
+
+    # İlgili sütunları seçip yıllara göre toplamları hesaplama
+    gender_data = data.groupby('year')[['total_male_number', 'total_female_number']].sum().reset_index()
+    gender_data.rename(columns={'total_male_number': 'Male Students', 'total_female_number': 'Female Students'},
+                       inplace=True)
+
+    # Artış/Azalış ve yüzdelik değişim sütunları ekleme
+    gender_data['Male Change'] = gender_data['Male Students'].diff()
+    gender_data['Female Change'] = gender_data['Female Students'].diff()
+    gender_data['Male Change (%)'] = gender_data['Male Change'] / gender_data['Male Students'].shift(1) * 100
+    gender_data['Female Change (%)'] = gender_data['Female Change'] / gender_data['Female Students'].shift(1) * 100
+
+    # Grafik oluşturma
+    plt.figure(figsize=(12, 6))
+    plt.plot(gender_data['year'], gender_data['Male Students'], marker='o', label='Male Students')
+    plt.plot(gender_data['year'], gender_data['Female Students'], marker='o', label='Female Students')
+    plt.title('Yearly Male and Female Student Changes')
+    plt.xlabel('Year')
+    plt.ylabel('Number of Students')
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+
+    # Grafik gösterimi
+    # plt.show()
+
+    # Analiz tablosunu döndürme
+    return gender_data
 
 
+college_gender_change_analysis = analyze_gender_changes(df)
+print("OKUL BAZINDA")
 
+print(college_gender_change_analysis)
+
+# college_gender_change_analysis.to_csv('department_gender_change_analysis.csv', index=False)
+
+# ########################################################## TERCİH EDİLME KONTENJAN VE YERLEŞME ORANLARI
+
+print("TERCİH EDİLME KONTENJAN VE YERLEŞME ORANLARI")
+
+
+def analyze_academic_changes(data, group_by='department_name'):
+
+    # Yerleşen öğrenci sayısını hesaplama
+    data['placed_students'] = data['male'] + data['female']
+
+    grouped_data = data.groupby(['year', group_by]).agg({
+        'quota': 'sum',  # Kontenjan toplamı
+        'preferred': 'sum',  # Tercih edilme toplamı
+        'placed_students': 'sum'  # Yerleşen öğrenci toplamı
+    }).reset_index()
+
+    grouped_data['Quota Change'] = grouped_data.groupby(group_by)['quota'].diff()
+    grouped_data['Preferred Change'] = grouped_data.groupby(group_by)['preferred'].diff()
+    grouped_data['Placed Students Change'] = grouped_data.groupby(group_by)['placed_students'].diff()
+
+    grouped_data['Quota Change (%)'] = grouped_data.groupby(group_by)['quota'].pct_change() * 100
+    grouped_data['Preferred Change (%)'] = grouped_data.groupby(group_by)['preferred'].pct_change() * 100
+    grouped_data['Placed Students Change (%)'] = grouped_data.groupby(group_by)['placed_students'].pct_change() * 100
+
+    if group_by == 'department_name':
+        grouped_data.sort_values(by=['department_name', 'year'], ascending=[True, True], inplace=True)
+    else:
+        grouped_data.sort_values(by=['faculty_name', 'year'], ascending=[True, True], inplace=True)
+
+    return grouped_data
+
+
+quota_preferred_placed = analyze_academic_changes(df, 'faculty_name')
+print(quota_preferred_placed)
+
+# quota_preferred_placed.to_csv('quota_preferred_placed_student_analysis.csv', index=False)
+
+quota_preferred_placed_dep = analyze_academic_changes(df, 'department_name')
+print(quota_preferred_placed_dep)
+
+# quota_preferred_placed_dep.to_csv('department_quota_preferred_placed_student_analysis.csv', index=False)
+
+# ##################################################  analyze_base_point_changes
+
+print('NET karşılaştırması')
+
+
+def analyze_base_point_changes(data, group_by='department_name', department_type=None):
+    """
+    TYT ve AYT başarılarını, correct answers ayrımı ile yıllara göre analiz eder.
+
+    Args:
+    - data (pd.DataFrame): Girdi veri çerçevesi.
+    - group_by (str): Analiz için grup değişkeni ('department_name' veya 'faculty_name').
+    - department_type (str, optional): Bölüm türü filtresi ('ea', 'söz', 'dil').
+
+    Returns:
+    - pd.DataFrame: Yıllık analiz tablosu, artış/azalış ve yüzdelik değişimlerle birlikte.
+    """
+
+    def normalize_string(s):
+        return unicodedata.normalize('NFKD', s).encode('ascii', 'ignore').decode('utf-8').upper()
+
+    # Department type filtresi
+    if department_type:
+        normalized_department_type = normalize_string(department_type)
+        data = data[data['department_type'].apply(lambda x: normalize_string(x) == normalized_department_type)].copy()
+
+    # TYT ve AYT ile başlayan sütunları bulma
+    tyt_columns = [col for col in data.columns if col.startswith('tyt')]
+    ayt_columns = [col for col in data.columns if col.startswith('ayt')]
+    ydt_columns = [col for col in data.columns if col.startswith('ydt')]
+
+    # Eksik sütunlar varsa 0 ile doldurma
+    for col in tyt_columns + ayt_columns + ydt_columns:
+        if col not in data.columns:
+            data[col] = 0
+
+    # Correct answers ayrımı
+    data.loc[:, 'tyt_correct_answer'] = data[tyt_columns].fillna(0).sum(axis=1)
+    data.loc[:, 'ayt_correct_answer'] = data[ayt_columns].fillna(0).sum(axis=1)
+    data.loc[:, 'ydt_correct_answer'] = data[ydt_columns].fillna(0).sum(axis=1)
+
+    # Sütunların sayısal (numeric) veri türünde olduğunu kontrol et
+    for col in tyt_columns + ayt_columns + ydt_columns:
+        data.loc[:, col] = pd.to_numeric(data[col], errors='coerce').fillna(0)
+
+    # Base point ve correct answers ile ilgili analiz
+    aggregation_function = 'mean' if group_by == 'faculty_name' else 'sum'
+
+    grouped_data = data.groupby(['year', group_by]).agg({
+        'success_order': aggregation_function,
+        'base_point': aggregation_function,
+        'tyt_correct_answer': aggregation_function,
+        'ayt_correct_answer': aggregation_function,
+        'ydt_correct_answer': aggregation_function
+    }).reset_index()
+
+    # Artış/Azalış hesaplama
+    grouped_data['Base Point Change'] = grouped_data.groupby(group_by)['success_order'].diff().fillna(0)
+    grouped_data['Success Order Change'] = grouped_data.groupby(group_by)['base_point'].diff().fillna(0)
+    grouped_data['TYT Correct Answer Change'] = grouped_data.groupby(group_by)['tyt_correct_answer'].diff().fillna(0)
+    grouped_data['AYT Correct Answer Change'] = grouped_data.groupby(group_by)['ayt_correct_answer'].diff().fillna(0)
+    grouped_data['YDT Correct Answer Change'] = grouped_data.groupby(group_by)['ydt_correct_answer'].diff().fillna(0)
+
+    # Yüzdelik değişim
+    grouped_data['Base Point Change (%)'] = grouped_data.groupby(group_by)['base_point'].pct_change().fillna(0) * 100
+    grouped_data['Success Order Change (%)'] = grouped_data.groupby(group_by)['success_order'].pct_change().fillna(0) * 100
+    grouped_data['TYT Correct Answer Change (%)'] = grouped_data.groupby(group_by)['tyt_correct_answer'].pct_change().fillna(0) * 100
+    grouped_data['AYT Correct Answer Change (%)'] = grouped_data.groupby(group_by)['ayt_correct_answer'].pct_change().fillna(0) * 100
+    grouped_data['YDT Correct Answer Change (%)'] = grouped_data.groupby(group_by)['ydt_correct_answer'].pct_change().fillna(0) * 100
+
+    # Success Order'ı css dosyasından alıyoruz (data'ya ekliyoruz)
+
+    # TYT ve AYT ile başlayan her sütun için artış/azalış hesaplama
+    for col in tyt_columns + ayt_columns:
+        grouped_data[f'{col} Change'] = data.groupby(group_by)[col].diff().fillna(0)
+        grouped_data[f'{col} Change (%)'] = data.groupby(group_by)[col].pct_change().fillna(0) * 100
+
+    # Sıralama
+    grouped_data.sort_values(by=[group_by, 'year'], ascending=[True, True], inplace=True)
+
+    return grouped_data
+
+
+tyt_ayt_correct_answer_analysis = analyze_base_point_changes(df, group_by='department_name')
+print(tyt_ayt_correct_answer_analysis)
+
+# tyt_ayt_correct_answer_analysis.to_csv('tyt_ayt_correct_answer_analysis.csv', index=False)
+
+# #################################################################
