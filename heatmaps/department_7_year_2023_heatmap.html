@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    
+        <script>
+            L_NO_TOUCH = false;
+            L_DISABLE_3D = false;
+        </script>
+    
+    <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
+    <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_df587b861141c25ae02b31c66cf7a473 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+        
+    <script src="https://cdn.jsdelivr.net/gh/python-visualization/folium@main/folium/templates/leaflet_heat.min.js"></script>
+</head>
+<body>
+    
+    
+            <div class="folium-map" id="map_df587b861141c25ae02b31c66cf7a473" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_df587b861141c25ae02b31c66cf7a473 = L.map(
+                "map_df587b861141c25ae02b31c66cf7a473",
+                {
+                    center: [38.9637, 35.2433],
+                    crs: L.CRS.EPSG3857,
+                    zoom: 6,
+                    zoomControl: true,
+                    preferCanvas: false,
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_b6218a203c2692ee8cdde2894eb22dc3 = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {"attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors", "detectRetina": false, "maxNativeZoom": 19, "maxZoom": 19, "minZoom": 0, "noWrap": false, "opacity": 1, "subdomains": "abc", "tms": false}
+            );
+        
+    
+            tile_layer_b6218a203c2692ee8cdde2894eb22dc3.addTo(map_df587b861141c25ae02b31c66cf7a473);
+        
+    
+            var heat_map_4e92270431d0dab539eb4add787d6790 = L.heatLayer(
+                [[37.0, 35.3213333, 2], [39.92077, 32.85411, 1], [36.88414, 30.70563, 4], [41.1833333, 41.8166667, 1], [37.8444, 27.8458, 1], [39.648369, 27.88261, 6], [38.885349, 40.498291, 1], [40.18257, 29.06687, 4], [40.155312, 26.41416, 1], [40.843849, 31.15654, 2], [39.9043189, 41.2678853, 1], [39.784302, 30.51922, 1], [41.00527, 28.97696, 70], [38.41885, 27.12872, 9], [40.8532704, 29.8815203, 9], [37.8666667, 32.4833333, 3], [38.619099, 27.428921, 2], [36.8, 34.6333333, 3], [40.9833333, 37.8833333, 1], [40.7568793, 30.378138, 3], [41.292782, 36.33128, 2], [37.15, 38.8, 1], [40.9833333, 27.5166667, 3], [38.4941667, 43.38, 1], [40.65, 29.2666667, 2]],
+                {"blur": 15, "maxZoom": 18, "minOpacity": 0.5, "radius": 25}
+            );
+        
+    
+            heat_map_4e92270431d0dab539eb4add787d6790.addTo(map_df587b861141c25ae02b31c66cf7a473);
+        
+    
+            var marker_530e516a2e2732dc6069dc9c664dd9f9 = L.marker(
+                [37.0, 35.3213333],
+                {}
+            ).addTo(map_df587b861141c25ae02b31c66cf7a473);
+        
+    
+        var popup_e9d91cc9a517edfa9e6e521595a026cb = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_0b91cae288199ca1e7d4039de7c9ef96 = $(`<div id="html_0b91cae288199ca1e7d4039de7c9ef96" style="width: 100.0%; height: 100.0%;">Adana: 2 students</div>`)[0];
+                popup_e9d91cc9a517edfa9e6e521595a026cb.setContent(html_0b91cae288199ca1e7d4039de7c9ef96);
+            
+        
+
+        marker_530e516a2e2732dc6069dc9c664dd9f9.bindPopup(popup_e9d91cc9a517edfa9e6e521595a026cb)
+        ;
+
+        
+    
+    
+            var marker_ca08c483b0726d93157405e8721febd8 = L.marker(
+                [39.92077, 32.85411],
+                {}
+            ).addTo(map_df587b861141c25ae02b31c66cf7a473);
+        
+    
+        var popup_83a3db24e469b765839b714d047abc73 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_57e88c8c067129bcb6cd51232eb5c0b2 = $(`<div id="html_57e88c8c067129bcb6cd51232eb5c0b2" style="width: 100.0%; height: 100.0%;">Ankara: 1 students</div>`)[0];
+                popup_83a3db24e469b765839b714d047abc73.setContent(html_57e88c8c067129bcb6cd51232eb5c0b2);
+            
+        
+
+        marker_ca08c483b0726d93157405e8721febd8.bindPopup(popup_83a3db24e469b765839b714d047abc73)
+        ;
+
+        
+    
+    
+            var marker_b19f32f0946bf4944ff74a1845adea4a = L.marker(
+                [36.88414, 30.70563],
+                {}
+            ).addTo(map_df587b861141c25ae02b31c66cf7a473);
+        
+    
+        var popup_a4184f74e749e0fc394ec756e02595a0 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_672c370b2a827f6ef2ef3c29bdcbc424 = $(`<div id="html_672c370b2a827f6ef2ef3c29bdcbc424" style="width: 100.0%; height: 100.0%;">Antalya: 4 students</div>`)[0];
+                popup_a4184f74e749e0fc394ec756e02595a0.setContent(html_672c370b2a827f6ef2ef3c29bdcbc424);
+            
+        
+
+        marker_b19f32f0946bf4944ff74a1845adea4a.bindPopup(popup_a4184f74e749e0fc394ec756e02595a0)
+        ;
+
+        
+    
+    
+            var marker_3e5b2e34f68533ddb138855471baa173 = L.marker(
+                [41.1833333, 41.8166667],
+                {}
+            ).addTo(map_df587b861141c25ae02b31c66cf7a473);
+        
+    
+        var popup_064a516ed963140e5d16ba92eab27e67 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_86754a6ef1dbf30d2552129869347dfb = $(`<div id="html_86754a6ef1dbf30d2552129869347dfb" style="width: 100.0%; height: 100.0%;">Artvin: 1 students</div>`)[0];
+                popup_064a516ed963140e5d16ba92eab27e67.setContent(html_86754a6ef1dbf30d2552129869347dfb);
+            
+        
+
+        marker_3e5b2e34f68533ddb138855471baa173.bindPopup(popup_064a516ed963140e5d16ba92eab27e67)
+        ;
+
+        
+    
+    
+            var marker_15d1c236c1f78ef20749d5c1a015e0dc = L.marker(
+                [37.8444, 27.8458],
+                {}
+            ).addTo(map_df587b861141c25ae02b31c66cf7a473);
+        
+    
+        var popup_33bd4e8151c8b5d7eea8998be72d2bd8 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_db7d413d3e5284dc3411d0cc04eacce8 = $(`<div id="html_db7d413d3e5284dc3411d0cc04eacce8" style="width: 100.0%; height: 100.0%;">Aydın: 1 students</div>`)[0];
+                popup_33bd4e8151c8b5d7eea8998be72d2bd8.setContent(html_db7d413d3e5284dc3411d0cc04eacce8);
+            
+        
+
+        marker_15d1c236c1f78ef20749d5c1a015e0dc.bindPopup(popup_33bd4e8151c8b5d7eea8998be72d2bd8)
+        ;
+
+        
+    
+    
+            var marker_85f0464610117a6ce83a560152549371 = L.marker(
+                [39.648369, 27.88261],
+                {}
+            ).addTo(map_df587b861141c25ae02b31c66cf7a473);
+        
+    
+        var popup_df75773c50ad362f627febfba006470d = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_e697c54c390131d6efea666fa8f47807 = $(`<div id="html_e697c54c390131d6efea666fa8f47807" style="width: 100.0%; height: 100.0%;">Balıkesir: 6 students</div>`)[0];
+                popup_df75773c50ad362f627febfba006470d.setContent(html_e697c54c390131d6efea666fa8f47807);
+            
+        
+
+        marker_85f0464610117a6ce83a560152549371.bindPopup(popup_df75773c50ad362f627febfba006470d)
+        ;
+
+        
+    
+    
+            var marker_f3d8d66c45af430ace48208b20ddfb31 = L.marker(
+                [38.885349, 40.498291],
+                {}
+            ).addTo(map_df587b861141c25ae02b31c66cf7a473);
+        
+    
+        var popup_220f0c5806adaf863610990271e903d6 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_3dcbdb12f438adb07080047dcfcabe99 = $(`<div id="html_3dcbdb12f438adb07080047dcfcabe99" style="width: 100.0%; height: 100.0%;">Bingöl: 1 students</div>`)[0];
+                popup_220f0c5806adaf863610990271e903d6.setContent(html_3dcbdb12f438adb07080047dcfcabe99);
+            
+        
+
+        marker_f3d8d66c45af430ace48208b20ddfb31.bindPopup(popup_220f0c5806adaf863610990271e903d6)
+        ;
+
+        
+    
+    
+            var marker_685123962aa6e1ca588a5603872e2d1a = L.marker(
+                [40.18257, 29.06687],
+                {}
+            ).addTo(map_df587b861141c25ae02b31c66cf7a473);
+        
+    
+        var popup_290fd287278769282ca7a3bf5be2fcf7 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_56dbba70883236d819bb8046af2c2ac3 = $(`<div id="html_56dbba70883236d819bb8046af2c2ac3" style="width: 100.0%; height: 100.0%;">Bursa: 4 students</div>`)[0];
+                popup_290fd287278769282ca7a3bf5be2fcf7.setContent(html_56dbba70883236d819bb8046af2c2ac3);
+            
+        
+
+        marker_685123962aa6e1ca588a5603872e2d1a.bindPopup(popup_290fd287278769282ca7a3bf5be2fcf7)
+        ;
+
+        
+    
+    
+            var marker_8b6249030011a67573d489208490531b = L.marker(
+                [40.155312, 26.41416],
+                {}
+            ).addTo(map_df587b861141c25ae02b31c66cf7a473);
+        
+    
+        var popup_b2a2008812717e29161bf701d293e2a2 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_adcc575605af2abfe90bc46cef95f7d1 = $(`<div id="html_adcc575605af2abfe90bc46cef95f7d1" style="width: 100.0%; height: 100.0%;">Çanakkale: 1 students</div>`)[0];
+                popup_b2a2008812717e29161bf701d293e2a2.setContent(html_adcc575605af2abfe90bc46cef95f7d1);
+            
+        
+
+        marker_8b6249030011a67573d489208490531b.bindPopup(popup_b2a2008812717e29161bf701d293e2a2)
+        ;
+
+        
+    
+    
+            var marker_0bc09e14bd6e02c8757e8abd0c88152b = L.marker(
+                [40.843849, 31.15654],
+                {}
+            ).addTo(map_df587b861141c25ae02b31c66cf7a473);
+        
+    
+        var popup_e366ac2c8b401637b31bc633fe799872 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_eb7898daff8233964d671a439f148de5 = $(`<div id="html_eb7898daff8233964d671a439f148de5" style="width: 100.0%; height: 100.0%;">Düzce: 2 students</div>`)[0];
+                popup_e366ac2c8b401637b31bc633fe799872.setContent(html_eb7898daff8233964d671a439f148de5);
+            
+        
+
+        marker_0bc09e14bd6e02c8757e8abd0c88152b.bindPopup(popup_e366ac2c8b401637b31bc633fe799872)
+        ;
+
+        
+    
+    
+            var marker_1e2cb708a8f5fd32d43e867d3037b015 = L.marker(
+                [39.9043189, 41.2678853],
+                {}
+            ).addTo(map_df587b861141c25ae02b31c66cf7a473);
+        
+    
+        var popup_694bde44b932d9493be0116d63b8f653 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_7f9a5e9a69e0d472311a5d353b346244 = $(`<div id="html_7f9a5e9a69e0d472311a5d353b346244" style="width: 100.0%; height: 100.0%;">Erzurum: 1 students</div>`)[0];
+                popup_694bde44b932d9493be0116d63b8f653.setContent(html_7f9a5e9a69e0d472311a5d353b346244);
+            
+        
+
+        marker_1e2cb708a8f5fd32d43e867d3037b015.bindPopup(popup_694bde44b932d9493be0116d63b8f653)
+        ;
+
+        
+    
+    
+            var marker_1cc6f8e9281260540396f2ef87892823 = L.marker(
+                [39.784302, 30.51922],
+                {}
+            ).addTo(map_df587b861141c25ae02b31c66cf7a473);
+        
+    
+        var popup_b3d41130e26ef8bfbd8feefc20956453 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_0fea4337c4de67bc4f53c05f85133ee9 = $(`<div id="html_0fea4337c4de67bc4f53c05f85133ee9" style="width: 100.0%; height: 100.0%;">Eskişehir: 1 students</div>`)[0];
+                popup_b3d41130e26ef8bfbd8feefc20956453.setContent(html_0fea4337c4de67bc4f53c05f85133ee9);
+            
+        
+
+        marker_1cc6f8e9281260540396f2ef87892823.bindPopup(popup_b3d41130e26ef8bfbd8feefc20956453)
+        ;
+
+        
+    
+    
+            var marker_a55694b556ab53cce51846de6583af4b = L.marker(
+                [41.00527, 28.97696],
+                {}
+            ).addTo(map_df587b861141c25ae02b31c66cf7a473);
+        
+    
+        var popup_4e0f51537b44f6a58ab6b4f6d0472bea = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_332a8cffe9d0699bef48ce69f56e5595 = $(`<div id="html_332a8cffe9d0699bef48ce69f56e5595" style="width: 100.0%; height: 100.0%;">İstanbul: 70 students</div>`)[0];
+                popup_4e0f51537b44f6a58ab6b4f6d0472bea.setContent(html_332a8cffe9d0699bef48ce69f56e5595);
+            
+        
+
+        marker_a55694b556ab53cce51846de6583af4b.bindPopup(popup_4e0f51537b44f6a58ab6b4f6d0472bea)
+        ;
+
+        
+    
+    
+            var marker_aa535ab7686880ea8e7f678be102eab1 = L.marker(
+                [38.41885, 27.12872],
+                {}
+            ).addTo(map_df587b861141c25ae02b31c66cf7a473);
+        
+    
+        var popup_d3fb087bf7a4e7fa3e7a7ae5416f8832 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_438af3f71d8402a330932921707fa2a5 = $(`<div id="html_438af3f71d8402a330932921707fa2a5" style="width: 100.0%; height: 100.0%;">İzmir: 9 students</div>`)[0];
+                popup_d3fb087bf7a4e7fa3e7a7ae5416f8832.setContent(html_438af3f71d8402a330932921707fa2a5);
+            
+        
+
+        marker_aa535ab7686880ea8e7f678be102eab1.bindPopup(popup_d3fb087bf7a4e7fa3e7a7ae5416f8832)
+        ;
+
+        
+    
+    
+            var marker_b887182bb8dcf0af8731e2d014781e39 = L.marker(
+                [40.8532704, 29.8815203],
+                {}
+            ).addTo(map_df587b861141c25ae02b31c66cf7a473);
+        
+    
+        var popup_40ff30cddbd1f946c3ef38d768d28e09 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_e029bf8f5367ce479d89469a88495b9c = $(`<div id="html_e029bf8f5367ce479d89469a88495b9c" style="width: 100.0%; height: 100.0%;">Kocaeli: 9 students</div>`)[0];
+                popup_40ff30cddbd1f946c3ef38d768d28e09.setContent(html_e029bf8f5367ce479d89469a88495b9c);
+            
+        
+
+        marker_b887182bb8dcf0af8731e2d014781e39.bindPopup(popup_40ff30cddbd1f946c3ef38d768d28e09)
+        ;
+
+        
+    
+    
+            var marker_44d8d2414bb76aecf1258bd7bdf2f3a1 = L.marker(
+                [37.8666667, 32.4833333],
+                {}
+            ).addTo(map_df587b861141c25ae02b31c66cf7a473);
+        
+    
+        var popup_c514991745bee64cb8b409c748f270c0 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_a6074d1bcb6373ce586f15a8ab06e196 = $(`<div id="html_a6074d1bcb6373ce586f15a8ab06e196" style="width: 100.0%; height: 100.0%;">Konya: 3 students</div>`)[0];
+                popup_c514991745bee64cb8b409c748f270c0.setContent(html_a6074d1bcb6373ce586f15a8ab06e196);
+            
+        
+
+        marker_44d8d2414bb76aecf1258bd7bdf2f3a1.bindPopup(popup_c514991745bee64cb8b409c748f270c0)
+        ;
+
+        
+    
+    
+            var marker_de8f2bde1db9615c8aaacaee0cc4a718 = L.marker(
+                [38.619099, 27.428921],
+                {}
+            ).addTo(map_df587b861141c25ae02b31c66cf7a473);
+        
+    
+        var popup_87d0975966b6bd40c08109d4596ac304 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_36ee91a54a45d653576f4c205fe443f6 = $(`<div id="html_36ee91a54a45d653576f4c205fe443f6" style="width: 100.0%; height: 100.0%;">Manisa: 2 students</div>`)[0];
+                popup_87d0975966b6bd40c08109d4596ac304.setContent(html_36ee91a54a45d653576f4c205fe443f6);
+            
+        
+
+        marker_de8f2bde1db9615c8aaacaee0cc4a718.bindPopup(popup_87d0975966b6bd40c08109d4596ac304)
+        ;
+
+        
+    
+    
+            var marker_9ac86ac8c3180cecbd0401322084dd23 = L.marker(
+                [36.8, 34.6333333],
+                {}
+            ).addTo(map_df587b861141c25ae02b31c66cf7a473);
+        
+    
+        var popup_64213785f765247da6b1478f89826cd2 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_a591dad066e8dea2c6a6f72aab2acd8c = $(`<div id="html_a591dad066e8dea2c6a6f72aab2acd8c" style="width: 100.0%; height: 100.0%;">Mersin: 3 students</div>`)[0];
+                popup_64213785f765247da6b1478f89826cd2.setContent(html_a591dad066e8dea2c6a6f72aab2acd8c);
+            
+        
+
+        marker_9ac86ac8c3180cecbd0401322084dd23.bindPopup(popup_64213785f765247da6b1478f89826cd2)
+        ;
+
+        
+    
+    
+            var marker_6aa2678427f92cf285b1017253b62bf9 = L.marker(
+                [40.9833333, 37.8833333],
+                {}
+            ).addTo(map_df587b861141c25ae02b31c66cf7a473);
+        
+    
+        var popup_d102dd094809ba9b936a5c50860f32fd = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_c9e98a612b973ae7fbd75bcdc1f56c35 = $(`<div id="html_c9e98a612b973ae7fbd75bcdc1f56c35" style="width: 100.0%; height: 100.0%;">Ordu: 1 students</div>`)[0];
+                popup_d102dd094809ba9b936a5c50860f32fd.setContent(html_c9e98a612b973ae7fbd75bcdc1f56c35);
+            
+        
+
+        marker_6aa2678427f92cf285b1017253b62bf9.bindPopup(popup_d102dd094809ba9b936a5c50860f32fd)
+        ;
+
+        
+    
+    
+            var marker_788bd368e1a07b40495c93afd90523cf = L.marker(
+                [40.7568793, 30.378138],
+                {}
+            ).addTo(map_df587b861141c25ae02b31c66cf7a473);
+        
+    
+        var popup_bb350cec30ccd48eeed2c69622463f08 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_8ce96d9b7272702ff978077fc2a78142 = $(`<div id="html_8ce96d9b7272702ff978077fc2a78142" style="width: 100.0%; height: 100.0%;">Sakarya: 3 students</div>`)[0];
+                popup_bb350cec30ccd48eeed2c69622463f08.setContent(html_8ce96d9b7272702ff978077fc2a78142);
+            
+        
+
+        marker_788bd368e1a07b40495c93afd90523cf.bindPopup(popup_bb350cec30ccd48eeed2c69622463f08)
+        ;
+
+        
+    
+    
+            var marker_7b21ac2edbe9d454dbdbf4b21d200f28 = L.marker(
+                [41.292782, 36.33128],
+                {}
+            ).addTo(map_df587b861141c25ae02b31c66cf7a473);
+        
+    
+        var popup_e0e447d32de0c97d67627efe183519f9 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_9fe8ca7dde6ae33ef42935e4c066f257 = $(`<div id="html_9fe8ca7dde6ae33ef42935e4c066f257" style="width: 100.0%; height: 100.0%;">Samsun: 2 students</div>`)[0];
+                popup_e0e447d32de0c97d67627efe183519f9.setContent(html_9fe8ca7dde6ae33ef42935e4c066f257);
+            
+        
+
+        marker_7b21ac2edbe9d454dbdbf4b21d200f28.bindPopup(popup_e0e447d32de0c97d67627efe183519f9)
+        ;
+
+        
+    
+    
+            var marker_0415f8d5f711807338681f5f62705aec = L.marker(
+                [37.15, 38.8],
+                {}
+            ).addTo(map_df587b861141c25ae02b31c66cf7a473);
+        
+    
+        var popup_b05cf595335107c4996b1c72be8b5cc1 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_6b31d8764d0e9d14bd9fd17bd1c860c3 = $(`<div id="html_6b31d8764d0e9d14bd9fd17bd1c860c3" style="width: 100.0%; height: 100.0%;">Şanlıurfa: 1 students</div>`)[0];
+                popup_b05cf595335107c4996b1c72be8b5cc1.setContent(html_6b31d8764d0e9d14bd9fd17bd1c860c3);
+            
+        
+
+        marker_0415f8d5f711807338681f5f62705aec.bindPopup(popup_b05cf595335107c4996b1c72be8b5cc1)
+        ;
+
+        
+    
+    
+            var marker_bde97ebe31db6ef8a24b94264cf0a0d8 = L.marker(
+                [40.9833333, 27.5166667],
+                {}
+            ).addTo(map_df587b861141c25ae02b31c66cf7a473);
+        
+    
+        var popup_99d79dba90f8130712e9c004d8a55b8d = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_b7aab7d16afa7b510c96fb78063d56a1 = $(`<div id="html_b7aab7d16afa7b510c96fb78063d56a1" style="width: 100.0%; height: 100.0%;">Tekirdağ: 3 students</div>`)[0];
+                popup_99d79dba90f8130712e9c004d8a55b8d.setContent(html_b7aab7d16afa7b510c96fb78063d56a1);
+            
+        
+
+        marker_bde97ebe31db6ef8a24b94264cf0a0d8.bindPopup(popup_99d79dba90f8130712e9c004d8a55b8d)
+        ;
+
+        
+    
+    
+            var marker_7fdff4364f4d096525e37ae9372ca1e9 = L.marker(
+                [38.4941667, 43.38],
+                {}
+            ).addTo(map_df587b861141c25ae02b31c66cf7a473);
+        
+    
+        var popup_6d0d9d8eaf0833158535c281b249c4f6 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_5e4587e88d0dcd4b4c7ab04cdcba4bde = $(`<div id="html_5e4587e88d0dcd4b4c7ab04cdcba4bde" style="width: 100.0%; height: 100.0%;">Van: 1 students</div>`)[0];
+                popup_6d0d9d8eaf0833158535c281b249c4f6.setContent(html_5e4587e88d0dcd4b4c7ab04cdcba4bde);
+            
+        
+
+        marker_7fdff4364f4d096525e37ae9372ca1e9.bindPopup(popup_6d0d9d8eaf0833158535c281b249c4f6)
+        ;
+
+        
+    
+    
+            var marker_464c85431f89cdd345ba9283e6300036 = L.marker(
+                [40.65, 29.2666667],
+                {}
+            ).addTo(map_df587b861141c25ae02b31c66cf7a473);
+        
+    
+        var popup_ff6db3647de5eb63a7f96d9709951e70 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_02cb602e22a2e73131a86a480b90150a = $(`<div id="html_02cb602e22a2e73131a86a480b90150a" style="width: 100.0%; height: 100.0%;">Yalova: 2 students</div>`)[0];
+                popup_ff6db3647de5eb63a7f96d9709951e70.setContent(html_02cb602e22a2e73131a86a480b90150a);
+            
+        
+
+        marker_464c85431f89cdd345ba9283e6300036.bindPopup(popup_ff6db3647de5eb63a7f96d9709951e70)
+        ;
+
+        
+    
+</script>
+</html>

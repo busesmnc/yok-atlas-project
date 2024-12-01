@@ -82,7 +82,6 @@ heat_data = [[row['lat'], row['lon'], row['students']] for index, row in data.it
 
 HeatMap(heat_data).add_to(m)
 for index, row in data.iterrows():
-    # Marker (işaretçi) ekleyin ve öğrenci sayısını etiket olarak gösterin
     Marker([row['lat'], row['lon']], 
            popup=f"{row['city']}: {row['students']} students").add_to(m)
 file_path="heatmaps/department_{}_year_{}_heatmap.html".format(department_id,year)
