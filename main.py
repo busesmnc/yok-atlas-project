@@ -1,21 +1,21 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import unicodedata
 
 
-pd.set_option('display.max_columns', None)
+pd.set_option('display.max_columns', 20)
 pd.set_option('display.width', None)
 pd.set_option('display.max_rows', None)
 pd.set_option('display.float_format', lambda x: '%.3f' % x)
 
 # df = pd.DataFrame(data, columns=columns_for_genders)
-csv_file_path = "general_data.csv"
+csv_file_path = "gen_data.csv"
 
 # CSV dosyasını DataFrame'e dönüştür
 df = pd.read_csv(csv_file_path)
-# df.to_csv('yok_atlas_veri.csv', index=False)  # 'index=False', satır numaralarını CSV'ye dahil etmez
-# print(data)
 # print(df)
+
 
 def check_df(dataframe, head=5):
     print("--------- shape -------------")
@@ -34,7 +34,7 @@ def check_df(dataframe, head=5):
 # print(df.head())
 # print(df.info())
 
-""""""
+
 def grab_col_names(dataframe, cat_th=10, car_th=20):
     """
 
@@ -94,37 +94,11 @@ def grab_col_names(dataframe, cat_th=10, car_th=20):
 
 # cat_cols, num_cols, cat_but_car = grab_col_names(df)
 
-# print(cat_cols)
-# print(num_cols)
-# print(cat_but_car)
-
-
-num_cols = ["total_male_number", "total_female_number"]
-
-print("toplam cinsiyet sayısı")
 
 def target_summary_with_num(dataframe, target, numerical_col, year):
     print(f"year: {year} için {numerical_col} ortalamaları")
     filtered_df = dataframe[dataframe["year"] == year]  # Filter dataframe by year
     print(filtered_df.groupby(target).agg({numerical_col: "sum"}), end="\n\n\n")
-
-
-# Loop through the column names and call the function
-for col in num_cols:
-    print(f"{col} için fakülte ortalama cinsiyet sayısı:")
-    target_summary_with_num(df, 'faculty_name', col, 2023)
-
-
-print("yıllık ortalama cinsiyet sayısı")
-for col in num_cols:
-    target_summary_with_num(df, 'year', col, 2023)
-
-
-"""
-# outlier check
-""" 
-
-# print("OUTLIER")
 
 
 def outlier_thresholds(dataframe, col_name, q1=0.05, q3=0.95):
@@ -144,127 +118,309 @@ def check_outlier(dataframe, col_name):
         return False
 
 
-for col in num_cols:
-   print(col, check_outlier(df, col))
-"""
+def department_general_analysis(data, group_by='department_name', department_type=None, year=None):
+    columns_to_analyze = ['total_male_number',
+                          'total_female_number', 'total_student_number_', 'professors',
+                          'assoc_prof', 'phd', 'base_point', 'success_order', 'preferred',
+                          'quota', 'placed_number', 'tyt_turkce', 'tyt_matematik', 'tyt_fen',
+                          'tyt_sosyal', 'ayt_matematik', 'ayt_fizik', 'ayt_kimya', 'ayt_biyoloji',
+                          'ayt_edebiyat', 'ayt_cografya1', 'ayt_cografya2', 'ayt_din',
+                          'ayt_felsefe', 'ayt_tarih1', 'ayt_tarih2', 'ydt_yabanci_dil', 'Marmara',
+                          'Ege', 'Akdeniz', 'Karadeniz', 'Ic_Anadolu', 'Dogu_Anadolu',
+                          'Guney_Dogu_Anadolu', 'tyt_correct_answer', 'ayt_correct_answer',
+                          'ydt_correct_answer']
 
-print("cinsiyet oranı hesaplama")
-import pandas as pd
+    # TYT ve AYT ile başlayan sütunları bulma
+    tyt_columns = [col for col in data.columns if col.startswith('tyt')]
+    ayt_columns = [col for col in data.columns if col.startswith('ayt')]
+    ydt_columns = [col for col in data.columns if col.startswith('ydt')]
 
-def calculate_gender_ratio(df, group_by_column):
+    # NaN değerlerini 0 ile doldurma
+    data[tyt_columns] = data[tyt_columns].fillna(0)
+    data[ayt_columns] = data[ayt_columns].fillna(0)
+    data[ydt_columns] = data[ydt_columns].fillna(0)
 
-    # Verilen sütuna göre gruplama ve cinsiyet bazlı toplamları hesapla
-    grouped = df.groupby(group_by_column).agg(
-        total_students=('total_student_number', 'sum'),
-        total_males=('total_male_number', 'sum'),
-        total_females=('total_female_number', 'sum')
-    )
+    # Correct answers ayrımı
+    data.loc[:, 'tyt_correct_answer'] = data[tyt_columns].sum(axis=1)
+    data.loc[:, 'ayt_correct_answer'] = data[ayt_columns].sum(axis=1)
+    data.loc[:, 'ydt_correct_answer'] = data[ydt_columns].sum(axis=1)
 
-    # Cinsiyet yüzdelerini hesapla
-    grouped['male_ratio'] = (grouped['total_males'] / grouped['total_students']) * 100
-    grouped['female_ratio'] = (grouped['total_females'] / grouped['total_students']) * 100
+    # Eksik sütunlar varsa 0 ile doldurma
+    for col in tyt_columns + ayt_columns + ydt_columns:
+        if col not in data.columns:
+            data[col] = 0
 
-    return grouped[['male_ratio', 'female_ratio']]
+    # group_by string ise listeye çevir
+    if isinstance(group_by, str):
+        group_by = [group_by]
 
-print("Fakülte bazlı cinsiyet oranı")
-# Fakülte bazlı cinsiyet oranı
-faculty_gender_ratios = calculate_gender_ratio(df, 'faculty_name')
-print("Fakülte bazlı cinsiyet oranları:")
-print(faculty_gender_ratios)
+    def normalize_string(s):
+        return unicodedata.normalize('NFKD', s).encode('ascii', 'ignore').decode('utf-8').upper()
 
-print("Departman bazlı cinsiyet oranı")
-# Departman bazlı cinsiyet oranı
-department_gender_ratios = calculate_gender_ratio(df, 'department_name')
-print("\nDepartman bazlı cinsiyet oranları:")
-print(department_gender_ratios)
+    # Department type filtresi
+    if department_type:
+        normalized_department_type = normalize_string(department_type)
+        data = data[data['department_type'].apply(lambda x: normalize_string(x) == normalized_department_type)].copy()
+
+    # Veriyi sıralayıp, geçmiş yıl verilerini de hesaba katacak şekilde pct_change hesaplamak
+    filtered_data = data.copy()
+
+    # Yeni bir DataFrame oluştur
+    analysis_data = filtered_data.loc[:, :]  # Tüm satır ve sütunları seçer
+
+    # Kullanıcıdan analiz yapmak istediği sütunları almak
+    print("Sorgulamak istediğiniz sütunları seçin. Mevcut sütunlar:")
+    for idx, col in enumerate(columns_to_analyze, 1):
+        print(f"{idx}. {col}")
+
+    user_input = input("Sorgulamak istediğiniz sütun numaralarını girin (virgülle ayırarak, örn. 1,2) ya da 0 girerek"
+                       " tüm sütunları seçebilirsiniz: ")
+
+    # Kullanıcının girdisini işleme
+    if user_input == '0':
+        selected_columns = columns_to_analyze  # Tüm sütunları seç
+    else:
+        selected_columns = [columns_to_analyze[int(i) - 1] for i in user_input.split(',') if i.strip().isdigit()]
+
+    # Correct answers ayrımı
+    correct_answers = ['tyt_correct_answer', 'ayt_correct_answer', 'ydt_correct_answer']
+    for i in correct_answers:
+        if i in selected_columns:
+            # Geçmiş yıl verisini kullanarak yüzdelik değişim hesaplama
+            analysis_data[f'{i} Change (%)'] = analysis_data.groupby(group_by)[i].pct_change() * 100
+
+    # Değişim ve yüzdelik değişim hesaplamaları
+    for col in [col for col in selected_columns if col not in correct_answers]:
+        # Geçmiş yıl verisini kullanarak yüzdelik değişim hesaplama
+        analysis_data[f'{col} Change (%)'] = analysis_data.groupby(group_by)[col].pct_change() * 100
+
+    # Yıl filtreleme (year parametresinin kontrolü ve dönüştürülmesi)
+    if year:
+        # Ensure 'year' column is in numeric format (int)
+        analysis_data['year'] = pd.to_numeric(analysis_data['year'], errors='coerce')
+
+        # Yıl filtresi uygulanmadan önce verinin sıralanması
+        analysis_data = analysis_data.sort_values(by=['department_name', 'year'])
+
+        # Uygulanan yıl filtresi
+        analysis_data = analysis_data[analysis_data['year'] == year]
+
+    # Sonuçları döndürme
+    selected_columns_with_change = ['year'] + group_by + ['department_type'] + [f'{col} Change (%)' for col in
+                                                                                selected_columns]
+    return analysis_data[selected_columns_with_change]
 
 
-def calculate_overall_gender_percentage(dataframe, year_filter):
+# result = department_general_analysis(df,group_by='faculty_name')
+# print(result)
 
-    if year_filter is not None:
-        dataframe = dataframe.loc[dataframe['year'] == year_filter]
 
-    total_male = dataframe['total_male_number'].sum()
-    total_female = dataframe['total_female_number'].sum()
-    total_students = dataframe['total_student_number'].sum()
+def faculty_analysis(data, faculty_name_column='faculty_name', year=None):
+    # Gruplama ve hesaplamalar için gerekli sütunlar
+    columns_to_analyze = ['total_male_number', 'total_female_number', 'total_student_number_', 'professors',
+                          'assoc_prof', 'phd', 'base_point', 'success_order', 'preferred', 'quota', 'placed_number',
+                          'tyt_turkce', 'tyt_matematik', 'tyt_fen', 'tyt_sosyal', 'ayt_matematik', 'ayt_fizik',
+                          'ayt_kimya', 'ayt_biyoloji', 'ayt_edebiyat', 'ayt_cografya1', 'ayt_cografya2', 'ayt_din',
+                          'ayt_felsefe', 'ayt_tarih1', 'ayt_tarih2', 'ydt_yabanci_dil', 'Marmara', 'Ege', 'Akdeniz',
+                          'Karadeniz', 'Ic_Anadolu', 'Dogu_Anadolu', 'Guney_Dogu_Anadolu', 'tyt_correct_answer',
+                          'ayt_correct_answer', 'ydt_correct_answer']
 
-    male_percentage = (total_male / total_students) * 100
-    female_percentage = (total_female / total_students) * 100
+    # TYT ve AYT ile başlayan sütunları bulma
+    tyt_columns = [col for col in data.columns if col.startswith('tyt')]
+    ayt_columns = [col for col in data.columns if col.startswith('ayt')]
+    ydt_columns = [col for col in data.columns if col.startswith('ydt')]
 
-    return {
-        "total_male": total_male,
-        "total_female": total_female,
-        "total_students": total_students,
-        "male_percentage": male_percentage,
-        "female_percentage": female_percentage
+    # NaN değerlerini 0 ile doldurma
+    data[tyt_columns] = data[tyt_columns].fillna(0)
+    data[ayt_columns] = data[ayt_columns].fillna(0)
+    data[ydt_columns] = data[ydt_columns].fillna(0)
+
+    # Correct answers ayrımı
+    data.loc[:, 'tyt_correct_answer'] = data[tyt_columns].sum(axis=1)
+    data.loc[:, 'ayt_correct_answer'] = data[ayt_columns].sum(axis=1)
+    data.loc[:, 'ydt_correct_answer'] = data[ydt_columns].sum(axis=1)
+
+    # Eğer faculty_name_column bir string ise listeye dönüştür
+    if isinstance(faculty_name_column, str):
+        faculty_name_column = [faculty_name_column]
+
+    # Gruplama ve hesaplama türlerine göre dict
+    aggregation_methods = {
+        'total_male_number': 'sum',
+        'total_female_number': 'sum',
+        'total_student_number_': 'sum',
+        'professors': 'sum',
+        'assoc_prof': 'sum',
+        'phd': 'sum',
+        'base_point': 'mean',  # Ortalama
+        'success_order': 'sum',
+        'preferred': 'sum',
+        'quota': 'sum',
+        'placed_number': 'sum',
+        'tyt_turkce': 'mean',  # Ortalama
+        'tyt_matematik': 'mean',
+        'tyt_fen': 'mean',
+        'tyt_sosyal': 'mean',
+        'ayt_matematik': 'mean',
+        'ayt_fizik': 'mean',
+        'ayt_kimya': 'mean',
+        'ayt_biyoloji': 'mean',
+        'ayt_edebiyat': 'mean',
+        'ayt_cografya1': 'mean',
+        'ayt_cografya2': 'mean',
+        'ayt_din': 'mean',
+        'ayt_felsefe': 'mean',
+        'ayt_tarih1': 'mean',
+        'ayt_tarih2': 'mean',
+        'ydt_yabanci_dil': 'mean',  # Ortalama
+        'Marmara': 'sum',
+        'Ege': 'sum',
+        'Akdeniz': 'sum',
+        'Karadeniz': 'sum',
+        'Ic_Anadolu': 'sum',
+        'Dogu_Anadolu': 'sum',
+        'Guney_Dogu_Anadolu': 'sum',
+        'tyt_correct_answer': 'mean',  # Ortalama
+        'ayt_correct_answer': 'mean',
+        'ydt_correct_answer': 'mean'
     }
 
+    # Fakülte ve yıl bazında gruplama yapma
+    faculty_data = data.groupby(faculty_name_column + ['year']).agg(aggregation_methods).reset_index()
 
-overall_percentage = calculate_overall_gender_percentage(df, 2023)
+    # Kullanıcıdan analiz yapmak istediği sütunları almak
+    print("Sorgulamak istediğiniz sütunları seçin. Mevcut sütunlar:")
+    for idx, col in enumerate(columns_to_analyze, 1):
+        print(f"{idx}. {col}")
 
-print("YTU GENDER STATISTICS:")
-print(f"Total male student number: {overall_percentage['total_male']}")
-print(f"Total female student number: {overall_percentage['total_female']}")
-print(f"Total student number: {overall_percentage['total_students']}")
-print(f"Male percentage: {overall_percentage['male_percentage']:.2f}%")
-print(f"Female percentage: {overall_percentage['female_percentage']:.2f}%")
+    user_input = input("Sorgulamak istediğiniz sütun numaralarını girin (virgülle ayırarak, örn. 1,2) ya da 0 girerek"
+                       " tüm sütunları seçebilirsiniz: ")
 
-
-# ### VISUALIZATION
-
-
-def plot_gender_trends_bar(df, department_name):
-    department_data = df[df['department_name'] == department_name]
-
-    department_data_yearly = department_data.groupby('year').agg(
-        total_male=('total_male_number', 'sum'),
-        total_female=('total_female_number', 'sum')
-    ).reset_index()
-
-    # Bar Grafiği
-    department_data_yearly.set_index('year', inplace=True)
-    department_data_yearly.plot(kind='bar', figsize=(10, 6), stacked=True)
-
-    # Başlık ve etiketler
-    plt.title(f'{department_name} department yearly gender ratio', fontsize=14)
-    plt.xlabel('Yıl', fontsize=12)
-    plt.ylabel('Student Number', fontsize=12)
-    plt.tight_layout()
-    plt.show()
-
-
-# Örnek kullanım:
-plot_gender_trends_bar(df, 'Bilgisayar Mühendisliği')
-
-
-def plot_gender_trends(df, level='department', name=None):
-
-    if level == 'department':
-        filtered_data = df[df['department_name'] == name]
-    elif level == 'faculty':
-        filtered_data = df[df['faculty_name'] == name]
+    # Kullanıcının girdisini işleme
+    if user_input == '0':
+        selected_columns = columns_to_analyze  # Tüm sütunları seç
     else:
-        raise ValueError("Seçilen düzey geçerli değil! Lütfen 'department' veya 'faculty' seçin.")
+        selected_columns = [columns_to_analyze[int(i) - 1] for i in user_input.split(',') if i.strip().isdigit()]
 
-    filtered_data_yearly = filtered_data.groupby('year').agg(
-        total_male=('total_male_number', 'sum'),
-        total_female=('total_female_number', 'sum')
-    ).reset_index()
+    # Correct answers ayrımı
+    correct_answers = ['tyt_correct_answer', 'ayt_correct_answer', 'ydt_correct_answer']
+    for i in correct_answers:
+        if i in selected_columns:
+            # Geçmiş yıl verisini kullanarak yüzdelik değişim hesaplama
+            faculty_data[f'{i} Change (%)'] = faculty_data.groupby(faculty_name_column)[i].pct_change() * 100
 
-    plt.figure(figsize=(10, 6))
+    # Yüzdelik değişim hesaplama (pct_change)
+    for col in [col for col in selected_columns if col not in correct_answers]:
+        if col in faculty_data.columns:
+            faculty_data[f'{col} Change (%)'] = faculty_data.groupby(faculty_name_column)[col].pct_change() * 100
 
-    plt.plot(filtered_data_yearly['year'], filtered_data_yearly['total_male'], label='Erkek Öğrenciler', marker='o')
+    # Yıl ve fakülte adı hariç, sadece yüzdelik değişimle gösterilecek sütunları seçme
+    change_columns = [f'{col} Change (%)' for col in columns_to_analyze]
 
-    plt.plot(filtered_data_yearly['year'], filtered_data_yearly['total_female'], label='Kadın Öğrenciler', marker='o')
+    if year:
+        # Ensure 'year' column is in numeric format (int)
+        faculty_data['year'] = pd.to_numeric(faculty_data['year'], errors='coerce')
 
-    title = f"{name} {level.capitalize()} Yearly Gender Distribution"
-    plt.title(title, fontsize=14)
-    plt.xlabel('Yıl', fontsize=12)
-    plt.ylabel('Student Number', fontsize=12)
-    plt.legend()
+        # Yıl filtresi uygulanmadan önce verinin sıralanması
+        faculty_data = faculty_data.sort_values(by=['faculty_name', 'year'])
 
-    plt.grid(True)
-    plt.xticks(filtered_data_yearly['year'], rotation=45)
-    plt.tight_layout()
-    plt.show()
-"""
+        # Uygulanan yıl filtresi
+        faculty_data = faculty_data[faculty_data['year'] == year]
+
+    # Sonuçları döndürme
+    selected_columns_with_change = ['year'] + faculty_name_column + [f'{col} Change (%)'
+                                                                   for col in selected_columns]
+
+    return faculty_data[selected_columns_with_change]
+
+
+# kk = faculty_analysis(df, year=2022)
+# print(kk)
+
+
+def year_analysis(data):
+    # Gruplama ve hesaplamalar için gerekli sütunlar
+    columns_to_analyze = ['total_male_number', 'total_female_number', 'total_student_number_', 'professors',
+                          'assoc_prof', 'phd', 'base_point', 'success_order', 'preferred', 'quota', 'placed_number',
+                          'tyt_turkce', 'tyt_matematik', 'tyt_fen', 'tyt_sosyal', 'ayt_matematik', 'ayt_fizik',
+                          'ayt_kimya', 'ayt_biyoloji', 'ayt_edebiyat', 'ayt_cografya1', 'ayt_cografya2', 'ayt_din',
+                          'ayt_felsefe', 'ayt_tarih1', 'ayt_tarih2', 'ydt_yabanci_dil', 'Marmara', 'Ege', 'Akdeniz',
+                          'Karadeniz', 'Ic_Anadolu', 'Dogu_Anadolu', 'Guney_Dogu_Anadolu', 'tyt_correct_answer',
+                          'ayt_correct_answer', 'ydt_correct_answer']
+
+    # TYT ve AYT ile başlayan sütunları bulma
+    tyt_columns = [col for col in data.columns if col.startswith('tyt')]
+    ayt_columns = [col for col in data.columns if col.startswith('ayt')]
+    ydt_columns = [col for col in data.columns if col.startswith('ydt')]
+
+    # NaN değerlerini 0 ile doldurma
+    data[tyt_columns] = data[tyt_columns].fillna(0)
+    data[ayt_columns] = data[ayt_columns].fillna(0)
+    data[ydt_columns] = data[ydt_columns].fillna(0)
+
+    # Correct answers ayrımı
+    data.loc[:, 'tyt_correct_answer'] = data[tyt_columns].sum(axis=1)
+    data.loc[:, 'ayt_correct_answer'] = data[ayt_columns].sum(axis=1)
+    data.loc[:, 'ydt_correct_answer'] = data[ydt_columns].sum(axis=1)
+
+    # Gruplama ve hesaplama türlerine göre dict
+    aggregation_methods = {
+        'total_male_number': 'sum',
+        'total_female_number': 'sum',
+        'total_student_number_': 'sum',
+        'professors': 'sum',
+        'assoc_prof': 'sum',
+        'phd': 'sum',
+        'base_point': 'mean',  # Ortalama
+        'success_order': 'sum',
+        'preferred': 'sum',
+        'quota': 'sum',
+        'placed_number': 'sum',
+        'tyt_turkce': 'mean',  # Ortalama
+        'tyt_matematik': 'mean',
+        'tyt_fen': 'mean',
+        'tyt_sosyal': 'mean',
+        'ayt_matematik': 'mean',
+        'ayt_fizik': 'mean',
+        'ayt_kimya': 'mean',
+        'ayt_biyoloji': 'mean',
+        'ayt_edebiyat': 'mean',
+        'ayt_cografya1': 'mean',
+        'ayt_cografya2': 'mean',
+        'ayt_din': 'mean',
+        'ayt_felsefe': 'mean',
+        'ayt_tarih1': 'mean',
+        'ayt_tarih2': 'mean',
+        'ydt_yabanci_dil': 'mean',  # Ortalama
+        'Marmara': 'sum',
+        'Ege': 'sum',
+        'Akdeniz': 'sum',
+        'Karadeniz': 'sum',
+        'Ic_Anadolu': 'sum',
+        'Dogu_Anadolu': 'sum',
+        'Guney_Dogu_Anadolu': 'sum',
+        'tyt_correct_answer': 'mean',  # Ortalama
+        'ayt_correct_answer': 'mean',
+        'ydt_correct_answer': 'mean'
+    }
+
+    # Yıl bazında gruplama yapma
+    year_data = data.groupby(['year']).agg(aggregation_methods).reset_index()
+
+    # Yüzdelik değişim hesaplama (pct_change)
+    for col in columns_to_analyze:
+        if col in year_data.columns:
+            year_data[f'{col} Change (%)'] = year_data[col].pct_change() * 100
+
+    # Yıl ve yüzdelik değişimle gösterilecek sütunları seçme
+    change_columns = [f'{col} Change (%)' for col in columns_to_analyze]
+
+    # Sonuçları döndürme
+    selected_columns_with_change = ['year'] + change_columns
+
+    return year_data[selected_columns_with_change]
+
+
+yearly_change_ytu = year_analysis(df)
+print(yearly_change_ytu)
+

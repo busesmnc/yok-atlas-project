@@ -8,7 +8,7 @@ pd.set_option('display.width', None)
 pd.set_option('display.max_rows', None)
 pd.set_option('display.float_format', lambda x: '%.3f' % x)
 
-csv_file_path = "ytu_general_data.csv"
+csv_file_path = "gen_data.csv"
 
 df = pd.read_csv(csv_file_path)
 
@@ -274,8 +274,8 @@ def analyze_base_point_changes(data, group_by='department_name', department_type
     }).reset_index()
 
     # Artış/Azalış hesaplama
-    grouped_data['Base Point Change'] = grouped_data.groupby(group_by)['success_order'].diff().fillna(0)
-    grouped_data['Success Order Change'] = grouped_data.groupby(group_by)['base_point'].diff().fillna(0)
+    grouped_data['Success Order Change'] = grouped_data.groupby(group_by)['success_order'].diff().fillna(0)
+    grouped_data['Base Point Change'] = grouped_data.groupby(group_by)['base_point'].diff().fillna(0)
     grouped_data['TYT Correct Answer Change'] = grouped_data.groupby(group_by)['tyt_correct_answer'].diff().fillna(0)
     grouped_data['AYT Correct Answer Change'] = grouped_data.groupby(group_by)['ayt_correct_answer'].diff().fillna(0)
     grouped_data['YDT Correct Answer Change'] = grouped_data.groupby(group_by)['ydt_correct_answer'].diff().fillna(0)
@@ -286,13 +286,12 @@ def analyze_base_point_changes(data, group_by='department_name', department_type
     grouped_data['TYT Correct Answer Change (%)'] = grouped_data.groupby(group_by)['tyt_correct_answer'].pct_change().fillna(0) * 100
     grouped_data['AYT Correct Answer Change (%)'] = grouped_data.groupby(group_by)['ayt_correct_answer'].pct_change().fillna(0) * 100
     grouped_data['YDT Correct Answer Change (%)'] = grouped_data.groupby(group_by)['ydt_correct_answer'].pct_change().fillna(0) * 100
-
+    print("HELP")
     # Success Order'ı css dosyasından alıyoruz (data'ya ekliyoruz)
-
-    # TYT ve AYT ile başlayan her sütun için artış/azalış hesaplama
-    for col in tyt_columns + ayt_columns:
-        grouped_data[f'{col} Change'] = data.groupby(group_by)[col].diff().fillna(0)
-        grouped_data[f'{col} Change (%)'] = data.groupby(group_by)[col].pct_change().fillna(0) * 100
+    # data'dan diff ve pct_change hesaplanır, grouped_data'ya eklenir
+    for col in tyt_columns + ayt_columns + ydt_columns:
+        grouped_data[f'{col} Change'] = data.groupby(group_by)[col].diff().reset_index(drop=True)
+        grouped_data[f'{col} Change (%)'] = (data.groupby(group_by)[col].pct_change() * 100).reset_index(drop=True)
 
     # Sıralama
     grouped_data.sort_values(by=[group_by, 'year'], ascending=[True, True], inplace=True)
@@ -300,9 +299,13 @@ def analyze_base_point_changes(data, group_by='department_name', department_type
     return grouped_data
 
 
-tyt_ayt_correct_answer_analysis = analyze_base_point_changes(df, group_by='department_name')
-print(tyt_ayt_correct_answer_analysis)
+# tyt_ayt_correct_answer_analysis = analyze_base_point_changes(df, group_by='department_name')
+# print(tyt_ayt_correct_answer_analysis)
 
 # tyt_ayt_correct_answer_analysis.to_csv('tyt_ayt_correct_answer_analysis.csv', index=False)
 
 # #################################################################
+
+ad = analyze_base_point_changes(df, department_type='say')
+print(":(")
+print(ad)
