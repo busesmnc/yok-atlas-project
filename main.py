@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import unicodedata
 
-
 pd.set_option('display.max_columns', 20)
 pd.set_option('display.width', None)
 pd.set_option('display.max_rows', None)
@@ -11,9 +10,11 @@ pd.set_option('display.float_format', lambda x: '%.3f' % x)
 
 # df = pd.DataFrame(data, columns=columns_for_genders)
 csv_file_path = "gen_data.csv"
+csv_file_path_city = "department_city_student_counts.csv"
 
 # CSV dosyasını DataFrame'e dönüştür
 df = pd.read_csv(csv_file_path)
+df_city = pd.read_csv(csv_file_path_city)
 # print(df)
 
 
@@ -413,7 +414,7 @@ def year_analysis(data):
     return year_data[selected_columns_with_change]
 
 
-# yearly_change_dep = department_general_analysis(df,group_by='faculty_name')
+# yearly_change_dep = department_general_analysis(df)
 # print(yearly_change_dep)
 
 
@@ -421,6 +422,22 @@ def year_analysis(data):
 # print(yearly_change_fac)
 
 
-yearly_change_ytu = year_analysis(df)
-print(yearly_change_ytu)
+# yearly_change_ytu = year_analysis(df)
+# print(yearly_change_ytu)
+
+
+selected_cols = ['total_male_number',
+                          'total_female_number', 'total_student_number_', 'professors',
+                          'assoc_prof', 'phd', 'base_point', 'success_order', 'preferred',
+                          'quota', 'placed_number', 'tyt_turkce', 'tyt_matematik', 'tyt_fen',
+                          'tyt_sosyal', 'ayt_matematik', 'ayt_fizik', 'ayt_kimya', 'ayt_biyoloji',
+                          'ayt_edebiyat', 'ayt_cografya1', 'ayt_cografya2', 'ayt_din',
+                          'ayt_felsefe', 'ayt_tarih1', 'ayt_tarih2', 'ydt_yabanci_dil', 'Marmara',
+                          'Ege', 'Akdeniz', 'Karadeniz', 'Ic_Anadolu', 'Dogu_Anadolu',
+                          'Guney_Dogu_Anadolu']
+
+for i in selected_cols:
+    outl = check_outlier(df, i)
+    if outl:
+        print(i)
 
