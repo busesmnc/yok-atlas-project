@@ -211,10 +211,6 @@ def department_general_analysis(data, group_by='department_name', department_typ
     return analysis_data[selected_columns_with_change]
 
 
-# result = department_general_analysis(df,group_by='faculty_name')
-# print(result)
-
-
 def faculty_analysis(data, faculty_name_column='faculty_name', year=None):
     # Gruplama ve hesaplamalar için gerekli sütunlar
     columns_to_analyze = ['total_male_number', 'total_female_number', 'total_student_number_', 'professors',
@@ -334,10 +330,6 @@ def faculty_analysis(data, faculty_name_column='faculty_name', year=None):
     return faculty_data[selected_columns_with_change]
 
 
-# kk = faculty_analysis(df, year=2022)
-# print(kk)
-
-
 def year_analysis(data):
     # Gruplama ve hesaplamalar için gerekli sütunlar
     columns_to_analyze = ['total_male_number', 'total_female_number', 'total_student_number_', 'professors',
@@ -419,6 +411,14 @@ def year_analysis(data):
     selected_columns_with_change = ['year'] + change_columns
 
     return year_data[selected_columns_with_change]
+
+
+# yearly_change_dep = department_general_analysis(df,group_by='faculty_name')
+# print(yearly_change_dep)
+
+
+# yearly_change_fac = faculty_analysis(df, year=2022)
+# print(yearly_change_fac)
 
 
 yearly_change_ytu = year_analysis(df)
