@@ -9,12 +9,19 @@ pd.set_option('display.max_rows', None)
 pd.set_option('display.float_format', lambda x: '%.3f' % x)
 
 # df = pd.DataFrame(data, columns=columns_for_genders)
-csv_file_path = "gen_data.csv"
+csv_file_path = "ytu_general_analysis.csv"
 csv_file_path_city = "department_city_student_counts.csv"
+csv_file_path_dep = "department_yearly__percentage_change.csv"
+csv_file_path_fac = "faculty_yearly_percentage_change.csv"
+csv_file_path_ytu = "ytu_yearly_percentage_change.csv"
 
 # CSV dosyasını DataFrame'e dönüştür
 df = pd.read_csv(csv_file_path)
 df_city = pd.read_csv(csv_file_path_city)
+df_dep_change = pd.read_csv(csv_file_path_dep)
+df_fac_change = pd.read_csv(csv_file_path_fac)
+df_ytu_change = pd.read_csv(csv_file_path_ytu)
+
 # print(df)
 
 
@@ -29,11 +36,6 @@ def check_df(dataframe, head=5):
     print(dataframe.tail(head))
     print("--------- na -------------")
     print(dataframe.isnull().sum())
-
-
-# check_df(df)
-# print(df.head())
-# print(df.info())
 
 
 def grab_col_names(dataframe, cat_th=10, car_th=20):
@@ -414,30 +416,73 @@ def year_analysis(data):
     return year_data[selected_columns_with_change]
 
 
+def plot_yearly_trend(data, metric, group_column='department_name', top_n=10):
+    """
+    Plots yearly trends for a given metric for top and bottom groups (e.g., departments, faculties, universities).
+
+    Parameters:
+    - data: DataFrame containing the data to analyze.
+    - metric: The column name of the metric to plot (e.g., 'base_point Change (%)').
+    - group_column: The column to group by (e.g., 'department_name', 'faculty_name', 'university_name').
+    - top_n: Number of top and bottom groups to include in the plot.
+
+    Returns:
+    - None: Displays the plots.
+    """
+    # Analyze data by years for the specified metric
+    yearly_analysis = data.groupby(['year', group_column])[metric].mean().unstack()
+
+    # Dynamically determine top and bottom groups
+    group_means = data.groupby(group_column)[metric].mean()
+    top_groups = group_means.nlargest(top_n).index
+    bottom_groups = group_means.nsmallest(top_n).index
+
+    # Plotting yearly trend for top groups
+    plt.figure(figsize=(12, 6))
+    for group in top_groups:
+        if group in yearly_analysis.columns:
+            plt.plot(yearly_analysis.index, yearly_analysis[group], marker='o', label=group)
+
+    plt.title(f'Yearly Trend for Top {top_n} {group_column.capitalize()}s with the Highest Increase ({metric})')
+    plt.xlabel('Year')
+    plt.ylabel(f'{metric}')
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
+    # Plotting yearly trend for bottom groups
+    plt.figure(figsize=(12, 6))
+    for group in bottom_groups:
+        if group in yearly_analysis.columns:
+            plt.plot(yearly_analysis.index, yearly_analysis[group], marker='o', label=group)
+
+    plt.title(f'Yearly Trend for Top {top_n} {group_column.capitalize()}s with the Highest Decrease ({metric})')
+    plt.xlabel('Year')
+    plt.ylabel(f'{metric}')
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
+
 # yearly_change_dep = department_general_analysis(df)
-# print(yearly_change_dep)
+# filtered_dataa = yearly_change_dep[yearly_change_dep['department_name'] == 'İletişim ve Tasarımı']
+# print(filtered_dataa)
 
-
-# yearly_change_fac = faculty_analysis(df, year=2022)
-# print(yearly_change_fac)
-
+# yearly_change_fac = faculty_analysis(df)
+# filtered_dataa = yearly_change_fac[yearly_change_fac['year'].isin([2022, 2023, 2024])]
+# print(filtered_dataa)
 
 # yearly_change_ytu = year_analysis(df)
-# print(yearly_change_ytu)
+# filtered_dataa = yearly_change_ytu[yearly_change_ytu['year'].isin([2022, 2023, 2024])]
+
+# plot_yearly_trend(data=df_dep_change, metric='total_female_number Change (%)', top_n=10)
 
 
-selected_cols = ['total_male_number',
-                          'total_female_number', 'total_student_number_', 'professors',
-                          'assoc_prof', 'phd', 'base_point', 'success_order', 'preferred',
-                          'quota', 'placed_number', 'tyt_turkce', 'tyt_matematik', 'tyt_fen',
-                          'tyt_sosyal', 'ayt_matematik', 'ayt_fizik', 'ayt_kimya', 'ayt_biyoloji',
-                          'ayt_edebiyat', 'ayt_cografya1', 'ayt_cografya2', 'ayt_din',
-                          'ayt_felsefe', 'ayt_tarih1', 'ayt_tarih2', 'ydt_yabanci_dil', 'Marmara',
-                          'Ege', 'Akdeniz', 'Karadeniz', 'Ic_Anadolu', 'Dogu_Anadolu',
-                          'Guney_Dogu_Anadolu']
 
-for i in selected_cols:
-    outl = check_outlier(df, i)
-    if outl:
-        print(i)
+
+
+
+
 
