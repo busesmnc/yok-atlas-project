@@ -1,7 +1,5 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-import unicodedata
-import seaborn as sns
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', None)
@@ -9,8 +7,26 @@ pd.set_option('display.max_rows', None)
 pd.set_option('display.float_format', lambda x: '%.3f' % x)
 
 csv_file_path = "ytu_general_analysis.csv"
+csv_file_path_dep_gen = "z_department_gender_change.csv"
+csv_file_path_dep_acd = "z_department_academic_changes.csv"
+csv_file_path_dep_tyt = "z_department_tyt_ayt_ydt_changes"
+csv_file_path_fac_gen = "z_faculty_gender_change.csv"
+csv_file_path_fac_acd = "z_faculty_academic_changes.csv"
+csv_file_path_fac_tyt = "z_faculty_tyt_ayt_ydt_changes"
+csv_file_path_ytu_gen = "z_ytu_gender_change.csv"
+csv_file_path_ytu_acd = "z_ytu_academic_changes_"
+csv_file_path_ytu_tyt = "z_ytu_tyt_ayt_ydt_changes"
 
 df = pd.read_csv(csv_file_path)
+df_dep_gen = pd.read_csv(csv_file_path_dep_gen)
+df_dep_acd = pd.read_csv(csv_file_path_dep_acd)
+df_dep_tyt = pd.read_csv(csv_file_path_dep_tyt)
+df_fac_gen = pd.read_csv(csv_file_path_fac_gen)
+df_fac_acd = pd.read_csv(csv_file_path_fac_acd)
+df_fac_tyt = pd.read_csv(csv_file_path_fac_tyt)
+df_ytu_gen = pd.read_csv(csv_file_path_ytu_gen)
+df_ytu_acd = pd.read_csv(csv_file_path_ytu_acd)
+df_ytu_tyt = pd.read_csv(csv_file_path_ytu_tyt)
 
 
 def gender_change_analysis(dataframe, group_col):
@@ -249,4 +265,109 @@ def ytu_analyze_base_point_changes(data):
     yearly_averages.sort_values(by='year', inplace=True)
 
     return yearly_averages
+
+
+def dep_visualize_trends_by_column_with_top_and_bottom(data, metric, group_column='department_name', top_n=10):
+    """
+    Visualizes trends for a specified metric over years for the top and bottom N departments.
+
+    Parameters:
+    - data: DataFrame containing the data to analyze.
+    - metric: The column name of the metric to visualize (e.g., 'professors').
+    - group_column: The column to group by (default is 'department_name').
+    - top_n: Number of departments to include in the top and bottom visualizations (default is 10).
+
+    Returns:
+    - None: Displays two plots (top N and bottom N trends).
+    """
+    # Calculate the average value of the metric for each department
+    department_means = data.groupby(group_column)[metric].mean()
+
+    # Get the top N and bottom N departments based on the metric
+    top_departments = department_means.nlargest(top_n).index
+    bottom_departments = department_means.nsmallest(top_n).index
+
+    # Filter the data for top and bottom departments
+    top_data = data[data[group_column].isin(top_departments)]
+    bottom_data = data[data[group_column].isin(bottom_departments)]
+
+    # Pivot data for easier plotting
+    top_trends = top_data.pivot(index='year', columns=group_column, values=metric)
+    bottom_trends = bottom_data.pivot(index='year', columns=group_column, values=metric)
+
+    # Plot trends for top departments
+    plt.figure(figsize=(14, 8))
+    for column in top_trends.columns:
+        plt.plot(top_trends.index, top_trends[column], marker='o', label=column)
+
+    metric_cleaned = metric.replace('_', ' ').capitalize()
+    plt.title(f'{metric_cleaned} Trends Over Years for Top {top_n} Departments', fontsize=16)
+    plt.xlabel('Year', fontsize=14)
+    plt.ylabel(metric_cleaned, fontsize=14)
+    plt.xticks(top_trends.index, fontsize=12)
+    plt.yticks(fontsize=12)
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=10)
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
+    # Plot trends for bottom departments
+    plt.figure(figsize=(14, 8))
+    for column in bottom_trends.columns:
+        plt.plot(bottom_trends.index, bottom_trends[column], marker='o', label=column)
+
+    plt.title(f'{metric_cleaned} Trends Over Years for Bottom {top_n} Departments', fontsize=16)
+    plt.xlabel('Year', fontsize=14)
+    plt.ylabel(metric_cleaned, fontsize=14)
+    plt.xticks(bottom_trends.index, fontsize=12)
+    plt.yticks(fontsize=12)
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=10)
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
+
+def visualize_column_trends_by_year(data, metric, top_n=10):
+    """
+    Visualizes trends for a specified metric over years.
+
+    Parameters:
+    - data: DataFrame containing the data to analyze.
+    - metric: The column name of the metric to visualize (e.g., 'Male Students').
+    - top_n: Maximum number of groups to display, if applicable (default is 10).
+
+    Returns:
+    - None: Displays the plot.
+    """
+    # Sort the data by year for consistent plotting
+    sorted_data = data.sort_values(by='year')
+
+    # Plot the trends
+    plt.figure(figsize=(12, 6))
+    plt.plot(sorted_data['year'], sorted_data[metric], marker='o', label=metric)
+
+    # Set plot details
+    metric_cleaned = metric.replace('_', ' ').capitalize()
+    plt.title(f'{metric_cleaned} Trends Over Years', fontsize=16)
+    plt.xlabel('Year', fontsize=14)
+    plt.ylabel(metric_cleaned, fontsize=14)
+    plt.xticks(sorted_data['year'], fontsize=12)
+    plt.yticks(fontsize=12)
+    plt.grid(True)
+    plt.legend(fontsize=12)
+    plt.tight_layout()
+    plt.show()
+
+
+# Example usage: Visualize trends for 'Male Students'
+# visualize_column_trends_by_year(df_ytu_gen, metric='Male Students')
+
+# plot_yearly_trend_handling_missing(data=df_fac_change, group_column='faculty_name',
+#                                  metric='base_point Change (%)', top_n=10)
+
+
+# dep_visualize_trends_by_column_with_top_and_bottom(df_fac_tyt, group_column='faculty_name',
+#                                                    metric='tyt_correct_answer', top_n=10)
+
+
 
