@@ -117,8 +117,8 @@ def create_heatmap(query,file_path):
     conn.close()
     m = folium.Map(location=[38.9637, 35.2433], zoom_start=6) 
     heat_data = [[row['lat'], row['lon'], row['students']] for index, row in data.iterrows()]
+    HeatMap(heat_data, radius=30).add_to(m)
 
-    HeatMap(heat_data).add_to(m)
     for index, row in data.iterrows():
         Marker([row['lat'], row['lon']], 
             popup=f"{row['city']}: {row['students']} students").add_to(m)

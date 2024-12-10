@@ -32,13 +32,14 @@ def success_orders_for_departments(department_types,years):
             d_type = "DİL" if d_type == "DIL" else d_type
             year=int(year)
             cursor.execute("""
-            SELECT department_name, success_order
+            SELECT department_name_en, success_order
             FROM success_orders
             LEFT JOIN departments ON department_id = departments.id
             WHERE success_order != 0
             AND d_type = ?
             AND year = ?
             ORDER BY success_order
+            limit 5
             """, (d_type, year))
 
             output=cursor.fetchall()
@@ -58,7 +59,7 @@ def base_points_for_departments(department_types,years):
             d_type = "DİL" if d_type == "DIL" else d_type
             year=int(year)
             cursor.execute("""
-            SELECT department_name, base_point
+            SELECT department_name_en, base_point
             FROM base_points
             LEFT JOIN departments ON department_id = departments.id
             WHERE base_point != 0.0
@@ -84,9 +85,9 @@ def correct_answers_for_departments(department_types,years):
             d_type = "DİL" if d_type == "DIL" else d_type
             year=int(year)
             cursor.execute("""
-            SELECT department_name,total_correct_answers FROM
+            SELECT department_name_en,total_correct_answers FROM
             Combined_Correct_Answers left join departments on department_id=departments.id 
-            where total_correct_answers>0.0 and d_type=? and year=? order by total_correct_answers desc;
+            where total_correct_answers>0.0 and d_type=? and year=? order by total_correct_answers desc limit 5;
             """, (d_type, year))
 
             output=cursor.fetchall()
@@ -107,16 +108,16 @@ def genders_for_departments(years,genders):
             gender=gender.lower()
             if gender=="male":
                 cursor.execute("""
-                SELECT department_name, male_percentage from genders 
+                SELECT department_name_en, male_percentage from genders 
                 left join departments on departments.id=department_id 
-                where male_percentage>0.0 and year=? order by male_percentage desc;
+                where year=? order by male_percentage desc;
                 """, (year,))
                 table.field_names = ["No","Department Name", "Male Percentage"]
             elif gender=="female":
                 cursor.execute("""
-                SELECT department_name, female_percentage from genders 
+                SELECT department_name_en, female_percentage from genders 
                 left join departments on departments.id=department_id 
-                where female_percentage>0.0 and year=? order by female_percentage desc;
+                where year=? order by female_percentage desc;
                 """, (year,))
                 table.field_names = ["No","Department Name", "Female Percentage"]
 
@@ -134,7 +135,7 @@ def prefered_for_departments(years):
     for year in years:
         year=int(year)
         cursor.execute("""
-        SELECT department_name,prefered from general_infos LEFT JOIN 
+        SELECT department_name_en,prefered from general_infos LEFT JOIN 
         departments on departments.id=department_id where year=? order by prefered desc;
         """, (year,))
 
@@ -151,7 +152,7 @@ def quota_for_departments(years):
     for year in years:
         year=int(year)
         cursor.execute("""
-        SELECT department_name,quota from general_infos LEFT JOIN 
+        SELECT department_name_en,quota from general_infos LEFT JOIN 
         departments on departments.id=department_id where year=? order by quota desc;
         """, (year,))
 
@@ -169,7 +170,7 @@ def student_number_for_departments(years):
     for year in years:
         year=int(year)
         cursor.execute("""
-        SELECT department_name,s_number from general_infos LEFT JOIN 
+        SELECT department_name_en,s_number from general_infos LEFT JOIN 
         departments on departments.id=department_id where year=? order by s_number desc;
         """, (year,))
 
@@ -186,7 +187,7 @@ def total_student_number_for_departments(years):
     for year in years:
         year=int(year)
         cursor.execute("""
-        select department_name,total_number from total_student_number 
+        select department_name_en,total_number from total_student_number 
         left join departments on departments.id=department_id 
         where year=? order by total_number desc;
         """, (year,))
@@ -209,7 +210,7 @@ def total_genders_for_departments(years,genders):
             gender=gender.lower()
             if gender=="male":
                 cursor.execute("""
-                SELECT department_name, 
+                SELECT department_name_en, 
                 ROUND(CAST(male as float)/(cast(total_number as float))*100,2) as male_percentage  
                 from total_student_number left join departments on departments.id=department_id 
                 where total_number!=0 and year=? order by male_percentage desc;
@@ -217,7 +218,7 @@ def total_genders_for_departments(years,genders):
                 table.field_names = ["No","Department Name", "Male Percentage"]
             elif gender=="female":
                 cursor.execute("""
-                SELECT department_name, 
+                SELECT department_name_en, 
                 ROUND(CAST(female as float)/(cast(total_number as float))*100,2) as female_percentage  
                 from total_student_number left join departments on departments.id=department_id 
                 where total_number!=0 and year=? order by female_percentage desc;
@@ -242,16 +243,40 @@ def exchange_program_for_departments(years,types):
             type=type.lower()
             if type=="incoming":
                 cursor.execute("""
-                select department_name,incoming from exchange_program 
-                left join departments on departments.id=department_id 
-                where incoming>0 and year=? order by incoming desc;
+                SELECT 
+                    TRIM(
+                        CASE 
+                            WHEN department_name_en like '%(English)%' THEN 
+                                REPLACE(department_name_en, '(English)', '')  
+                            ELSE department_name_en
+                        END
+                    ) AS normalized_department_name,
+                    SUM(incoming) AS incoming_student
+                FROM departments
+                LEFT JOIN exchange_program as ep ON departments.id = ep.department_id
+                WHERE ep.year = ?
+                GROUP BY normalized_department_name
+                ORDER BY incoming_student DESC
+                LIMIT 5;
                 """, (year,))
                 table.field_names = ["No","Department Name", "Incoming Number"]
             elif type=="leaving":
                 cursor.execute("""
-                select department_name,leaving from exchange_program 
-                left join departments on departments.id=department_id 
-                where leaving>0 and year=? order by leaving desc;
+                SELECT 
+                    TRIM(
+                        CASE 
+                            WHEN department_name_en like '%(English)%' THEN 
+                                REPLACE(department_name_en, '(English)', '')  -- Removes the "(İngilizce)" part
+                            ELSE department_name_en
+                        END
+                    ) AS normalized_department_name,
+                    SUM(leaving) AS leaving_student
+                FROM departments
+                LEFT JOIN exchange_program as ep ON departments.id = ep.department_id
+                WHERE ep.year = ?
+                GROUP BY normalized_department_name
+                ORDER BY leaving_student DESC
+                LIMIT 5;
                 """, (year,))
                 table.field_names = ["No","Department Name", "Leaving Number"]
 
@@ -274,21 +299,21 @@ def academician_for_departments(years,academicians):
             academician=academician.lower()
             if academician=="professor":
                 cursor.execute("""
-                SELECT department_name, ROUND(CAST(proffesor AS FLOAT) / (CAST(proffesor AS FLOAT) + CAST(assoc_prof AS FLOAT) + CAST(phd AS FLOAT)) * 100, 2) AS professor_percentage
+                SELECT department_name_en, ROUND(CAST(proffesor AS FLOAT) / (CAST(proffesor AS FLOAT) + CAST(assoc_prof AS FLOAT) + CAST(phd AS FLOAT)) * 100, 2) AS professor_percentage
                 FROM academicians left JOIN departments on departments.id=department_id where year=?
                 ORDER BY professor_percentage DESC;
                 """, (year,))
                 table.field_names = ["No","Department Name", "Professor Percentage"]
             elif academician=="associate professor":
                 cursor.execute("""
-                SELECT department_name, ROUND(CAST(assoc_prof AS FLOAT) / (CAST(proffesor AS FLOAT) + CAST(assoc_prof AS FLOAT) + CAST(phd AS FLOAT)) * 100, 2) AS assoc_professor_percentage
+                SELECT department_name_en, ROUND(CAST(assoc_prof AS FLOAT) / (CAST(proffesor AS FLOAT) + CAST(assoc_prof AS FLOAT) + CAST(phd AS FLOAT)) * 100, 2) AS assoc_professor_percentage
                 FROM academicians left JOIN departments on departments.id=department_id where year=?
                 ORDER BY assoc_professor_percentage DESC;
                 """, (year,))
                 table.field_names = ["No","Department Name", "Associate Professor Percentage"]
             elif academician=="phd":
                 cursor.execute("""
-                SELECT department_name, ROUND(CAST(phd AS FLOAT) / (CAST(proffesor AS FLOAT) + CAST(assoc_prof AS FLOAT) + CAST(phd AS FLOAT)) * 100, 2) AS phd_percentage
+                SELECT department_name_en, ROUND(CAST(phd AS FLOAT) / (CAST(proffesor AS FLOAT) + CAST(assoc_prof AS FLOAT) + CAST(phd AS FLOAT)) * 100, 2) AS phd_percentage
                 FROM academicians left JOIN departments on departments.id=department_id where year=?
                 ORDER BY phd_percentage DESC;
                 """, (year,))
@@ -308,7 +333,7 @@ def settlement_for_departments(years):
     for year in years:
         year=int(year)
         cursor.execute("""
-        select department_name, ROUND(CAST(s_number as float)/(cast(prefered as float))*100,2) as settlement_percentage 
+        select department_name_en, ROUND(CAST(s_number as float)/(cast(prefered as float))*100,2) as settlement_percentage 
         from general_infos left join departments on departments.id=department_id where year=? 
         order by settlement_percentage desc;
         """, (year,))
@@ -326,7 +351,7 @@ def quota_occupancy_for_departments(years):
     for year in years:
         year=int(year)
         cursor.execute("""
-        select department_name, ROUND(CAST(s_number as float)/(cast(quota as float))*100,2) as quota_occupancy 
+        select department_name_en, ROUND(CAST(s_number as float)/(cast(quota as float))*100,2) as quota_occupancy 
         from general_infos left join departments on departments.id=department_id where year=? order by quota_occupancy desc;
         """, (year,))
 
@@ -343,13 +368,13 @@ def prefered_percentage_for_departments(years):
     for year in years:
         year=int(year)
         cursor.execute("""
-        SELECT department_name, 
+        SELECT department_name_en, 
         ROUND(CAST(prefered AS FLOAT) / (
             SELECT SUM(prefered) 
             FROM general_infos 
             WHERE year = ?) * 100, 2) AS prefered_percentage
         FROM general_infos LEFT JOIN departments ON departments.id = department_id 
-        WHERE year =? GROUP BY department_name ORDER BY prefered_percentage DESC;
+        WHERE year =? GROUP BY department_name_en ORDER BY prefered_percentage DESC;
         """, (year,year))
 
         output=cursor.fetchall()
@@ -367,7 +392,7 @@ def cities_for_departments(cities,years):
             city=city.capitalize()
             year=int(year)
             cursor.execute("""
-            select department_name,student_number from student_cities left join departments on departments.id=department_id 
+            select department_name_en,student_number from student_cities left join departments on departments.id=department_id 
             left join Cities on city=Cities.id where city_name=? and year=? order by student_number desc;
             """, (city, year))
 
@@ -386,12 +411,12 @@ def regions_for_departments(regions,years):
         for year in years:
             region=region.capitalize()
             year=int(year)
-            cursor.execute("""select region_name from Regions where id=?""",(region))
-            region_name=cursor.fetchone()[0]
+            cursor.execute("""select region_name_en from Regions where id=?""",(region))
+            region_name_en=cursor.fetchone()[0]
             cursor.execute("""
-            select department_name,student_number from student_regions left join departments on departments.id=department_id 
-            left join Regions on region=Regions.id where region_name=? and year=? order by student_number desc;
-            """, (region_name, year))
+            select department_name_en,student_number from student_regions left join departments on departments.id=department_id 
+            left join Regions on region=Regions.id where region_name_en=? and year=? order by student_number desc;
+            """, (region_name_en, year))
 
             output=cursor.fetchall()
             table = PrettyTable()
@@ -399,7 +424,7 @@ def regions_for_departments(regions,years):
 
             for index, row in enumerate(output, start=1):
                 table.add_row([index] + list(row))
-            print(Fore.GREEN+Style.BRIGHT+"\n\nStudent Number from {} in {}".format(region_name,year))
+            print(Fore.GREEN+Style.BRIGHT+"\n\nStudent Number from {} in {}".format(region_name_en,year))
             print(table)
             print("\n\n")
 

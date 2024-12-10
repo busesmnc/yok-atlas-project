@@ -233,8 +233,8 @@ def regions_for_school(years):
     for year in years:
         year=int(year)
         cursor.execute("""
-        select region_name,sum(student_number) as total_student from student_regions left join Regions on Regions.id=region 
-        where year=? group by region_name order by total_student desc;
+        select region_name_en,sum(student_number) as total_student from student_regions left join Regions on Regions.id=region 
+        where year=? group by region_name_en order by total_student desc;
         """, (year,))
 
         output=cursor.fetchall()

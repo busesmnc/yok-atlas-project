@@ -31,14 +31,14 @@ def genders_for_faculties(years,genders):
             gender=gender.lower()
             if gender=="male":
                 cursor.execute("""
-                select faculty_name,round(CAST(SUM(male) AS FLOAT) / (CAST(SUM(male) AS FLOAT) + CAST(SUM(female) AS FLOAT)) * 100,2) as male_percentage 
+                select faculty_name_en,round(CAST(SUM(male) AS FLOAT) / (CAST(SUM(male) AS FLOAT) + CAST(SUM(female) AS FLOAT)) * 100,2) as male_percentage 
                 from departments left join genders on departments.id=department_id left join faculties on faculties.id=faculty_id where year=? 
                 group by faculty_id order by male_percentage desc;
                 """, (year,))
                 table.field_names = ["No","Faculty Name", "Male Percentage"]
             elif gender=="female":
                 cursor.execute("""
-                select faculty_name,round(CAST(SUM(female) AS FLOAT) / (CAST(SUM(male) AS FLOAT) + CAST(SUM(female) AS FLOAT)) * 100,2) as female_percentage 
+                select faculty_name_en,round(CAST(SUM(female) AS FLOAT) / (CAST(SUM(male) AS FLOAT) + CAST(SUM(female) AS FLOAT)) * 100,2) as female_percentage 
                 from departments left join genders on departments.id=department_id left join faculties on faculties.id=faculty_id where year=? 
                 group by faculty_id order by female_percentage desc;
                 """, (year,))
@@ -58,7 +58,7 @@ def prefered_for_faculties(years):
     for year in years:
         year=int(year)
         cursor.execute("""
-        select faculty_name,sum(prefered) as total_prefered from departments left join general_infos on departments.id=department_id 
+        select faculty_name_en,sum(prefered) as total_prefered from departments left join general_infos on departments.id=department_id 
         left join faculties on faculties.id=faculty_id where year=? group by faculty_id order by total_prefered desc;
         """, (year,))
 
@@ -75,7 +75,7 @@ def quota_for_faculties(years):
     for year in years:
         year=int(year)
         cursor.execute("""
-        select faculty_name,sum(quota) as total_quota from departments left join general_infos on departments.id=department_id 
+        select faculty_name_en,sum(quota) as total_quota from departments left join general_infos on departments.id=department_id 
         left join faculties on faculties.id=faculty_id where year=? group by faculty_id order by total_quota desc;
         """, (year,))
 
@@ -92,7 +92,7 @@ def student_number_for_faculties(years):
     for year in years:
         year=int(year)
         cursor.execute("""
-        select faculty_name,sum(s_number) as total_student from departments left join general_infos on departments.id=department_id 
+        select faculty_name_en,sum(s_number) as total_student from departments left join general_infos on departments.id=department_id 
         left join faculties on faculties.id=faculty_id where year=? group by faculty_id order by total_student desc;
         """, (year,))
 
@@ -109,7 +109,7 @@ def total_student_number_for_faculties(years):
     for year in years:
         year=int(year)
         cursor.execute("""
-        select faculty_name,sum(total_number) as total_student from departments left join faculties on faculties.id=faculty_id 
+        select faculty_name_en,sum(total_number) as total_student from departments left join faculties on faculties.id=faculty_id 
         left join total_student_number on departments.id=department_id where year=? group by faculty_id order by total_student desc;
         """, (year,))
 
@@ -130,14 +130,14 @@ def total_genders_for_faculties(years,genders):
             gender=gender.lower()
             if gender=="male":
                 cursor.execute("""
-                select faculty_name,round(cast(sum(male) as float) / (cast(sum(total_number) as float))*100,2) as male_percentage 
+                select faculty_name_en,round(cast(sum(male) as float) / (cast(sum(total_number) as float))*100,2) as male_percentage 
                 from departments left join faculties on faculties.id=faculty_id left join total_student_number on departments.id=department_id 
                 where year=? group by faculty_id order by male_percentage desc;
                 """, (year,))
                 table.field_names = ["No","Faculty Name", "Male Percentage"]
             elif gender=="female":
                 cursor.execute("""
-                select faculty_name,round(cast(sum(female) as float) / (cast(sum(total_number) as float))*100,2) as female_percentage 
+                select faculty_name_en,round(cast(sum(female) as float) / (cast(sum(total_number) as float))*100,2) as female_percentage 
                 from departments left join faculties on faculties.id=faculty_id left join total_student_number on departments.id=department_id 
                 where year=? group by faculty_id order by female_percentage desc;
                 """, (year,))
@@ -161,13 +161,13 @@ def exchange_program_for_faculties(years,types):
             type=type.lower()
             if type=="incoming":
                 cursor.execute("""
-                select faculty_name,sum(incoming) as total_incoming from departments left join faculties on faculties.id=faculty_id 
+                select faculty_name_en,sum(incoming) as total_incoming from departments left join faculties on faculties.id=faculty_id 
                 left join exchange_program on departments.id=department_id where year=? group by faculty_id order by total_incoming desc;
                 """, (year,))
                 table.field_names = ["No","Faculty Name", "Incoming Number"]
             elif type=="leaving":
                 cursor.execute("""
-                select faculty_name,sum(leaving) as total_leaving from departments left join faculties on faculties.id=faculty_id 
+                select faculty_name_en,sum(leaving) as total_leaving from departments left join faculties on faculties.id=faculty_id 
                 left join exchange_program on departments.id=department_id where year=? group by faculty_id order by total_leaving desc;
                 """, (year,))
                 table.field_names = ["No","Faculty Name", "Leaving Number"]
@@ -191,21 +191,21 @@ def academician_for_faculties(years,academicians):
             academician=academician.lower()
             if academician=="professor":
                 cursor.execute("""
-                select faculty_name, round(cast(sum(proffesor) as float) / (cast(sum(proffesor) as float) + cast(sum(assoc_prof) as float) + cast(sum(phd) as float))*100,2) as professor_percentage 
+                select faculty_name_en, round(cast(sum(proffesor) as float) / (cast(sum(proffesor) as float) + cast(sum(assoc_prof) as float) + cast(sum(phd) as float))*100,2) as professor_percentage 
                 from departments left join faculties on faculties.id=faculty_id left join academicians on departments.id=department_id where year=? group by faculty_id 
                 order by professor_percentage desc;
                 """, (year,))
                 table.field_names = ["No","Faculty Name", "Professor Percentage"]
             elif academician=="associate professor":
                 cursor.execute("""
-                select faculty_name, round(cast(sum(assoc_prof) as float) / (cast(sum(proffesor) as float) + cast(sum(assoc_prof) as float) + cast(sum(phd) as float))*100,2) as assoc_professor_percentage 
+                select faculty_name_en, round(cast(sum(assoc_prof) as float) / (cast(sum(proffesor) as float) + cast(sum(assoc_prof) as float) + cast(sum(phd) as float))*100,2) as assoc_professor_percentage 
                 from departments left join faculties on faculties.id=faculty_id left join academicians on departments.id=department_id where year=? group by faculty_id 
                 order by assoc_professor_percentage desc;
                 """, (year,))
                 table.field_names = ["No","Faculty Name", "Associate Professor Percentage"]
             elif academician=="phd":
                 cursor.execute("""
-                select faculty_name, round(cast(sum(phd) as float) / (cast(sum(proffesor) as float) + cast(sum(assoc_prof) as float) + cast(sum(phd) as float))*100,2) as phd_percentage 
+                select faculty_name_en, round(cast(sum(phd) as float) / (cast(sum(proffesor) as float) + cast(sum(assoc_prof) as float) + cast(sum(phd) as float))*100,2) as phd_percentage 
                 from departments left join faculties on faculties.id=faculty_id left join academicians on departments.id=department_id where year=? group by faculty_id 
                 order by phd_percentage desc;
                 """, (year,))
@@ -225,7 +225,7 @@ def settlement_for_faculties(years):
     for year in years:
         year=int(year)
         cursor.execute("""
-        select faculty_name,round(cast(sum(s_number) as float) / (cast(sum(prefered) as float))*100,2) as settlement_percentage 
+        select faculty_name_en,round(cast(sum(s_number) as float) / (cast(sum(prefered) as float))*100,2) as settlement_percentage 
         from departments left join general_infos on departments.id=department_id left join faculties on faculties.id=faculty_id 
         where year=? group by faculty_id order by settlement_percentage desc;
         """, (year,))
@@ -243,7 +243,7 @@ def quota_occupancy_for_faculties(years):
     for year in years:
         year=int(year)
         cursor.execute("""
-        select faculty_name,round(cast(sum(s_number) as float) / (cast(sum(quota) as float))*100,2) as quota_occupancy 
+        select faculty_name_en,round(cast(sum(s_number) as float) / (cast(sum(quota) as float))*100,2) as quota_occupancy 
         from departments left join general_infos on departments.id=department_id left join faculties on faculties.id=faculty_id 
         where year=? group by faculty_id order by quota_occupancy desc;
         """, (year,))
@@ -261,7 +261,7 @@ def prefered_percentage_for_faculties(years):
     for year in years:
         year=int(year)
         cursor.execute("""
-        SELECT faculty_name, ROUND(
+        SELECT faculty_name_en, ROUND(
         CAST(SUM(prefered) AS FLOAT) / (
             SELECT SUM(prefered) 
             FROM general_infos 
@@ -269,7 +269,7 @@ def prefered_percentage_for_faculties(years):
         ) * 100, 2) AS prefered_percentage
         FROM general_infos LEFT JOIN departments ON departments.id = department_id
         LEFT JOIN faculties ON faculties.id = faculty_id
-        WHERE year = ? GROUP BY faculty_name ORDER BY prefered_percentage DESC;
+        WHERE year = ? GROUP BY faculty_name_en ORDER BY prefered_percentage DESC;
         """, (year,year))
 
         output=cursor.fetchall()
@@ -287,7 +287,7 @@ def cities_for_faculties(cities,years):
             city=city.capitalize()
             year=int(year)
             cursor.execute("""
-            select faculty_name,sum(student_number) as total_student from departments left join faculties on faculties.id=faculty_id 
+            select faculty_name_en,sum(student_number) as total_student from departments left join faculties on faculties.id=faculty_id 
             left join student_cities on departments.id=department_id left join Cities on Cities.id=city where year=? and city_name=? 
             group by faculty_id order by total_student desc;
             """, (year,city))
@@ -307,13 +307,13 @@ def regions_for_faculties(regions,years):
         for year in years:
             region=region.capitalize()
             year=int(year)
-            cursor.execute("""select region_name from Regions where id=?""",(region))
-            region_name=cursor.fetchone()[0]
+            cursor.execute("""select region_name_en from Regions where id=?""",(region))
+            region_name_en=cursor.fetchone()[0]
             cursor.execute("""
-            select faculty_name,sum(student_number) as total_student from departments left join faculties on faculties.id=faculty_id 
-            left join student_regions on departments.id=department_id left join Regions on Regions.id=region where year=? and region_name=? 
+            select faculty_name_en,sum(student_number) as total_student from departments left join faculties on faculties.id=faculty_id 
+            left join student_regions on departments.id=department_id left join Regions on Regions.id=region where year=? and region_name_en=? 
             group by faculty_id order by total_student desc;
-            """, (year,region_name))
+            """, (year,region_name_en))
 
             output=cursor.fetchall()
             table = PrettyTable()
@@ -321,7 +321,7 @@ def regions_for_faculties(regions,years):
 
             for index, row in enumerate(output, start=1):
                 table.add_row([index] + list(row))
-            print(Fore.GREEN+Style.BRIGHT+"\n\nStudent Number from {} in {}".format(region_name,year))
+            print(Fore.GREEN+Style.BRIGHT+"\n\nStudent Number from {} in {}".format(region_name_en,year))
             print(table)
             print("\n\n")
 
