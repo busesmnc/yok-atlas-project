@@ -10,15 +10,15 @@ pd.set_option('display.width', None)
 pd.set_option('display.max_rows', None)
 pd.set_option('display.float_format', lambda x: '%.3f' % x)
 
-csv_file_path = "ytu_general_analysis.csv"
-csv_file_path2 = "ytu_general_analysis2.csv"
+
+csv_file_path = "YTU_General_Data.csv"
 csv_file_path_city = "department_city_student_counts.csv"
-csv_file_path_dep = "department_yearly__percentage_change.csv"
-csv_file_path_fac = "faculty_yearly_percentage_change.csv"
-csv_file_path_ytu = "ytu_yearly_percentage_change.csv"
+csv_file_path_dep = "ytu_department_yearly_per_change"
+csv_file_path_fac = "yut_faculty_yearly_per_change.csv"
+csv_file_path_ytu = "ytu_yearly_per_change.csv"
+
 
 df = pd.read_csv(csv_file_path)
-df2 = pd.read_csv(csv_file_path2)
 df_city = pd.read_csv(csv_file_path_city)
 df_dep_change = pd.read_csv(csv_file_path_dep)
 df_fac_change = pd.read_csv(csv_file_path_fac)
@@ -95,7 +95,32 @@ def grab_col_names(dataframe, cat_th=10, car_th=20):
 
     return cat_cols, num_cols, cat_but_car
 
-# cat_cols, num_cols, cat_but_car = grab_col_names(df)
+
+# cat_cols, num_cols, cat_but_car = grab_col_names(df2)
+numeric_cols = ['Male', 'Female', 'Total Male Number', 'Total Female Number', 'Total Student Number',
+                'Exchange to Abroad', 'Exchange from Abroad', 'Professors', 'Assoc Prof', 'Phd', 'Base Point',
+                'Success Order', 'Preferred number', 'Quota', 'Placed Number', 'Total Correct TYT', 'Total Correct AYT',
+                'Total Correct YDT', 'TYT Turkish', 'TYT Math', 'TYT Science', 'TYT Social Science', 'AYT Math',
+                'AYT Physics', 'AYT Chemistry', 'AYT Biology', 'AYT Literature', 'AYT Geography1', 'AYT Geography2',
+                'AYT Religion', 'AYT Philosophy', 'AYT History1', 'AYT History2', 'YDT Foreign Language', 'Marmara',
+                'Aegean', 'Mediterranean', 'Black Sea', 'Central Anatolia', 'Eastern Anatolia', 'Southeastern Anatolia']
+
+
+def num_summary(dataframe, numerical_col, plot=False):
+    quantiles = [0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 0.95, 0.99]
+    print(dataframe[numerical_col].describe(quantiles).T)
+
+    if plot:
+        dataframe[numerical_col].hist(bins=20)
+        plt.xlabel(numerical_col.replace('_', ' ').capitalize())
+        plt.title(numerical_col.replace('_', ' ').capitalize())
+        plt.show()
+
+
+# print(num_summary(df2, "success_order", plot=True))
+
+# for col in numeric_cols:
+#     num_summary(df2, col, plot=True)
 
 
 def target_summary_with_num(dataframe, target, numerical_col, year):
@@ -116,42 +141,23 @@ def outlier_thresholds(dataframe, col_name, q1=0.05, q3=0.95):
 def check_outlier(dataframe, col_name):
     low_limit, up_limit = outlier_thresholds(dataframe, col_name)
     if dataframe[(dataframe[col_name] > up_limit) | (dataframe[col_name] < low_limit)].any(axis=None):
-        return True
-    else:
-        return False
+        print(dataframe[col_name])
+    return low_limit, up_limit
 
 
-def department_general_analysis(data, group_by='department_name', department_type=None, year=None):
-    columns_to_analyze = ['total_male_number',
-                          'total_female_number', 'total_student_number_', 'professors',
-                          'assoc_prof', 'phd', 'base_point', 'success_order', 'preferred',
-                          'quota', 'placed_number', 'tyt_turkce', 'tyt_matematik', 'tyt_fen',
-                          'tyt_sosyal', 'ayt_matematik', 'ayt_fizik', 'ayt_kimya', 'ayt_biyoloji',
-                          'ayt_edebiyat', 'ayt_cografya1', 'ayt_cografya2', 'ayt_din',
-                          'ayt_felsefe', 'ayt_tarih1', 'ayt_tarih2', 'ydt_yabanci_dil', 'Marmara',
-                          'Ege', 'Akdeniz', 'Karadeniz', 'Ic_Anadolu', 'Dogu_Anadolu',
-                          'Guney_Dogu_Anadolu', 'tyt_correct_answer', 'ayt_correct_answer',
-                          'ydt_correct_answer']
+# for col in numeric_cols:
+#     print(col)
+#     check_outlier(df2, col)
 
-    # TYT ve AYT ile başlayan sütunları bulma
-    tyt_columns = [col for col in data.columns if col.startswith('tyt')]
-    ayt_columns = [col for col in data.columns if col.startswith('ayt')]
-    ydt_columns = [col for col in data.columns if col.startswith('ydt')]
 
-    # NaN değerlerini 0 ile doldurma
-    data[tyt_columns] = data[tyt_columns].fillna(0)
-    data[ayt_columns] = data[ayt_columns].fillna(0)
-    data[ydt_columns] = data[ydt_columns].fillna(0)
-
-    # Correct answers ayrımı
-    data.loc[:, 'tyt_correct_answer'] = data[tyt_columns].sum(axis=1)
-    data.loc[:, 'ayt_correct_answer'] = data[ayt_columns].sum(axis=1)
-    data.loc[:, 'ydt_correct_answer'] = data[ydt_columns].sum(axis=1)
-
-    # Eksik sütunlar varsa 0 ile doldurma
-    for col in tyt_columns + ayt_columns + ydt_columns:
-        if col not in data.columns:
-            data[col] = 0
+def department_analysis(data, group_by='Department Name', department_type=None, Year=None):
+    columns_to_analyze = ['Male', 'Female', 'Total Male Number', 'Total Female Number', 'Total Student Number',
+                'Exchange to Abroad', 'Exchange from Abroad', 'Professors', 'Assoc Prof', 'Phd', 'Base Point',
+                'Success Order', 'Preferred number', 'Quota', 'Placed Number', 'Total Correct TYT', 'Total Correct AYT',
+                'Total Correct YDT', 'TYT Turkish', 'TYT Math', 'TYT Science', 'TYT Social Science', 'AYT Math',
+                'AYT Physics', 'AYT Chemistry', 'AYT Biology', 'AYT Literature', 'AYT Geography1', 'AYT Geography2',
+                'AYT Religion', 'AYT Philosophy', 'AYT History1', 'AYT History2', 'YDT Foreign Language', 'Marmara',
+                'Aegean', 'Mediterranean', 'Black Sea', 'Central Anatolia', 'Eastern Anatolia', 'Southeastern Anatolia']
 
     # group_by string ise listeye çevir
     if isinstance(group_by, str):
@@ -163,7 +169,7 @@ def department_general_analysis(data, group_by='department_name', department_typ
     # Department type filtresi
     if department_type:
         normalized_department_type = normalize_string(department_type)
-        data = data[data['department_type'].apply(lambda x: normalize_string(x) == normalized_department_type)].copy()
+        data = data[data['Department Type'].apply(lambda x: normalize_string(x) == normalized_department_type)].copy()
 
     # Veriyi sıralayıp, geçmiş yıl verilerini de hesaba katacak şekilde pct_change hesaplamak
     filtered_data = data.copy()
@@ -185,107 +191,91 @@ def department_general_analysis(data, group_by='department_name', department_typ
     else:
         selected_columns = [columns_to_analyze[int(i) - 1] for i in user_input.split(',') if i.strip().isdigit()]
 
-    # Correct answers ayrımı
-    correct_answers = ['tyt_correct_answer', 'ayt_correct_answer', 'ydt_correct_answer']
-    for i in correct_answers:
-        if i in selected_columns:
-            # Geçmiş yıl verisini kullanarak yüzdelik değişim hesaplama
-            analysis_data[f'{i} Change (%)'] = analysis_data.groupby(group_by)[i].pct_change() * 100
-
-    # Değişim ve yüzdelik değişim hesaplamaları
-    for col in [col for col in selected_columns if col not in correct_answers]:
+    for col in selected_columns:
         # Geçmiş yıl verisini kullanarak yüzdelik değişim hesaplama
         analysis_data[f'{col} Change (%)'] = analysis_data.groupby(group_by)[col].pct_change() * 100
 
     # Yıl filtreleme (year parametresinin kontrolü ve dönüştürülmesi)
-    if year:
+    if Year:
         # Ensure 'year' column is in numeric format (int)
-        analysis_data['year'] = pd.to_numeric(analysis_data['year'], errors='coerce')
+        analysis_data['Year'] = pd.to_numeric(analysis_data['Year'], errors='coerce')
 
         # Yıl filtresi uygulanmadan önce verinin sıralanması
-        analysis_data = analysis_data.sort_values(by=['department_name', 'year'])
+        analysis_data = analysis_data.sort_values(by=['Department Name', 'Year'])
 
         # Uygulanan yıl filtresi
-        analysis_data = analysis_data[analysis_data['year'] == year]
+        analysis_data = analysis_data[analysis_data['Year'] == Year]
 
     # Sonuçları döndürme
-    selected_columns_with_change = ['year'] + group_by + ['department_type'] + [f'{col} Change (%)' for col in
+    selected_columns_with_change = ['Year'] + group_by + ['Department Type'] + [f'{col} Change (%)' for col in
                                                                                 selected_columns]
     return analysis_data[selected_columns_with_change]
 
 
-def faculty_analysis(data, faculty_name_column='faculty_name', year=None):
+# dep_change = department_analysis(df)
+# print(dep_change)
+# dep_change.to_csv("ytu_department_yearly_per_change")
+
+def faculty_analysis(data, faculty_name_column='Faculty Name', Year=None):
     # Gruplama ve hesaplamalar için gerekli sütunlar
-    columns_to_analyze = ['total_male_number', 'total_female_number', 'total_student_number_', 'professors',
-                          'assoc_prof', 'phd', 'base_point', 'success_order', 'preferred', 'quota', 'placed_number',
-                          'tyt_turkce', 'tyt_matematik', 'tyt_fen', 'tyt_sosyal', 'ayt_matematik', 'ayt_fizik',
-                          'ayt_kimya', 'ayt_biyoloji', 'ayt_edebiyat', 'ayt_cografya1', 'ayt_cografya2', 'ayt_din',
-                          'ayt_felsefe', 'ayt_tarih1', 'ayt_tarih2', 'ydt_yabanci_dil', 'Marmara', 'Ege', 'Akdeniz',
-                          'Karadeniz', 'Ic_Anadolu', 'Dogu_Anadolu', 'Guney_Dogu_Anadolu', 'tyt_correct_answer',
-                          'ayt_correct_answer', 'ydt_correct_answer']
+    columns_to_analyze = ['Male', 'Female', 'Total Male Number', 'Total Female Number', 'Total Student Number',
+                'Exchange to Abroad', 'Exchange from Abroad', 'Professors', 'Assoc Prof', 'Phd', 'Base Point',
+                'Success Order', 'Preferred number', 'Quota', 'Placed Number', 'Total Correct TYT', 'Total Correct AYT',
+                'Total Correct YDT', 'TYT Turkish', 'TYT Math', 'TYT Science', 'TYT Social Science', 'AYT Math',
+                'AYT Physics', 'AYT Chemistry', 'AYT Biology', 'AYT Literature', 'AYT Geography1', 'AYT Geography2',
+                'AYT Religion', 'AYT Philosophy', 'AYT History1', 'AYT History2', 'YDT Foreign Language', 'Marmara',
+                'Aegean', 'Mediterranean', 'Black Sea', 'Central Anatolia', 'Eastern Anatolia', 'Southeastern Anatolia']
 
-    # TYT ve AYT ile başlayan sütunları bulma
-    tyt_columns = [col for col in data.columns if col.startswith('tyt')]
-    ayt_columns = [col for col in data.columns if col.startswith('ayt')]
-    ydt_columns = [col for col in data.columns if col.startswith('ydt')]
 
-    # NaN değerlerini 0 ile doldurma
-    data[tyt_columns] = data[tyt_columns].fillna(0)
-    data[ayt_columns] = data[ayt_columns].fillna(0)
-    data[ydt_columns] = data[ydt_columns].fillna(0)
-
-    # Correct answers ayrımı
-    data.loc[:, 'tyt_correct_answer'] = data[tyt_columns].sum(axis=1)
-    data.loc[:, 'ayt_correct_answer'] = data[ayt_columns].sum(axis=1)
-    data.loc[:, 'ydt_correct_answer'] = data[ydt_columns].sum(axis=1)
-
-    # Eğer faculty_name_column bir string ise listeye dönüştür
     if isinstance(faculty_name_column, str):
         faculty_name_column = [faculty_name_column]
 
-    # Gruplama ve hesaplama türlerine göre dict
     aggregation_methods = {
-        'total_male_number': 'sum',
-        'total_female_number': 'sum',
-        'total_student_number_': 'sum',
-        'professors': 'sum',
-        'assoc_prof': 'sum',
-        'phd': 'sum',
-        'base_point': 'mean',  # Ortalama
-        'success_order': 'sum',
-        'preferred': 'sum',
-        'quota': 'sum',
-        'placed_number': 'sum',
-        'tyt_turkce': 'mean',  # Ortalama
-        'tyt_matematik': 'mean',
-        'tyt_fen': 'mean',
-        'tyt_sosyal': 'mean',
-        'ayt_matematik': 'mean',
-        'ayt_fizik': 'mean',
-        'ayt_kimya': 'mean',
-        'ayt_biyoloji': 'mean',
-        'ayt_edebiyat': 'mean',
-        'ayt_cografya1': 'mean',
-        'ayt_cografya2': 'mean',
-        'ayt_din': 'mean',
-        'ayt_felsefe': 'mean',
-        'ayt_tarih1': 'mean',
-        'ayt_tarih2': 'mean',
-        'ydt_yabanci_dil': 'mean',  # Ortalama
+        'Male': 'sum',
+        'Female': 'sum',
+        'Total Male Number': 'sum',
+        'Total Female Number': 'sum',
+        'Total Student Number': 'sum',
+        'Exchange to Abroad': 'sum',
+        'Exchange from Abroad': 'sum',
+        'Professors': 'sum',
+        'Assoc Prof': 'sum',
+        'Phd': 'sum',
+        'Base Point': 'mean',  # Average
+        'Success Order': 'sum',
+        'Preferred number': 'sum',
+        'Quota': 'sum',
+        'Placed Number': 'sum',
+        'Total Correct TYT': 'mean',  # Average
+        'Total Correct AYT': 'mean',
+        'Total Correct YDT': 'mean',
+        'TYT Turkish': 'mean',
+        'TYT Math': 'mean',
+        'TYT Science': 'mean',
+        'TYT Social Science': 'mean',
+        'AYT Math': 'mean',
+        'AYT Physics': 'mean',
+        'AYT Chemistry': 'mean',
+        'AYT Biology': 'mean',
+        'AYT Literature': 'mean',
+        'AYT Geography1': 'mean',
+        'AYT Geography2': 'mean',
+        'AYT Religion': 'mean',
+        'AYT Philosophy': 'mean',
+        'AYT History1': 'mean',
+        'AYT History2': 'mean',
+        'YDT Foreign Language': 'mean',
         'Marmara': 'sum',
-        'Ege': 'sum',
-        'Akdeniz': 'sum',
-        'Karadeniz': 'sum',
-        'Ic_Anadolu': 'sum',
-        'Dogu_Anadolu': 'sum',
-        'Guney_Dogu_Anadolu': 'sum',
-        'tyt_correct_answer': 'mean',  # Ortalama
-        'ayt_correct_answer': 'mean',
-        'ydt_correct_answer': 'mean'
+        'Aegean': 'sum',
+        'Mediterranean': 'sum',
+        'Black Sea': 'sum',
+        'Central Anatolia': 'sum',
+        'Eastern Anatolia': 'sum',
+        'Southeastern Anatolia': 'sum'
     }
 
     # Fakülte ve yıl bazında gruplama yapma
-    faculty_data = data.groupby(faculty_name_column + ['year']).agg(aggregation_methods).reset_index()
+    faculty_data = data.groupby(faculty_name_column + ['Year']).agg(aggregation_methods).reset_index()
 
     # Kullanıcıdan analiz yapmak istediği sütunları almak
     print("Sorgulamak istediğiniz sütunları seçin. Mevcut sütunlar:")
@@ -301,108 +291,90 @@ def faculty_analysis(data, faculty_name_column='faculty_name', year=None):
     else:
         selected_columns = [columns_to_analyze[int(i) - 1] for i in user_input.split(',') if i.strip().isdigit()]
 
-    # Correct answers ayrımı
-    correct_answers = ['tyt_correct_answer', 'ayt_correct_answer', 'ydt_correct_answer']
-    for i in correct_answers:
-        if i in selected_columns:
-            # Geçmiş yıl verisini kullanarak yüzdelik değişim hesaplama
-            faculty_data[f'{i} Change (%)'] = faculty_data.groupby(faculty_name_column)[i].pct_change() * 100
-
-    # Yüzdelik değişim hesaplama (pct_change)
-    for col in [col for col in selected_columns if col not in correct_answers]:
+    for col in selected_columns:
         if col in faculty_data.columns:
             faculty_data[f'{col} Change (%)'] = faculty_data.groupby(faculty_name_column)[col].pct_change() * 100
 
-    # Yıl ve fakülte adı hariç, sadece yüzdelik değişimle gösterilecek sütunları seçme
     change_columns = [f'{col} Change (%)' for col in columns_to_analyze]
 
-    if year:
+    if Year:
         # Ensure 'year' column is in numeric format (int)
-        faculty_data['year'] = pd.to_numeric(faculty_data['year'], errors='coerce')
+        faculty_data['Year'] = pd.to_numeric(faculty_data['Year'], errors='coerce')
 
         # Yıl filtresi uygulanmadan önce verinin sıralanması
-        faculty_data = faculty_data.sort_values(by=['faculty_name', 'year'])
+        faculty_data = faculty_data.sort_values(by=['Faculty Name', 'Year'])
 
         # Uygulanan yıl filtresi
-        faculty_data = faculty_data[faculty_data['year'] == year]
+        faculty_data = faculty_data[faculty_data['year'] == Year]
 
     # Sonuçları döndürme
-    selected_columns_with_change = ['year'] + faculty_name_column + [f'{col} Change (%)'
-                                                                   for col in selected_columns]
+    selected_columns_with_change = ['Year'] + faculty_name_column + change_columns
 
     return faculty_data[selected_columns_with_change]
 
 
+# fac_change = faculty_analysis(df)
+# fac_change_year = fac_change[fac_change['Year'] != 2021]
+# print(fac_change)
+# fac_change.to_csv("yut_faculty_yearly_per_change.csv")
+
+
 def year_analysis(data):
-    # Gruplama ve hesaplamalar için gerekli sütunlar
-    columns_to_analyze = ['total_male_number', 'total_female_number', 'total_student_number_', 'professors',
-                          'assoc_prof', 'phd', 'base_point', 'success_order', 'preferred', 'quota', 'placed_number',
-                          'tyt_turkce', 'tyt_matematik', 'tyt_fen', 'tyt_sosyal', 'ayt_matematik', 'ayt_fizik',
-                          'ayt_kimya', 'ayt_biyoloji', 'ayt_edebiyat', 'ayt_cografya1', 'ayt_cografya2', 'ayt_din',
-                          'ayt_felsefe', 'ayt_tarih1', 'ayt_tarih2', 'ydt_yabanci_dil', 'Marmara', 'Ege', 'Akdeniz',
-                          'Karadeniz', 'Ic_Anadolu', 'Dogu_Anadolu', 'Guney_Dogu_Anadolu', 'tyt_correct_answer',
-                          'ayt_correct_answer', 'ydt_correct_answer']
 
-    # TYT ve AYT ile başlayan sütunları bulma
-    tyt_columns = [col for col in data.columns if col.startswith('tyt')]
-    ayt_columns = [col for col in data.columns if col.startswith('ayt')]
-    ydt_columns = [col for col in data.columns if col.startswith('ydt')]
+    columns_to_analyze = ['Male', 'Female', 'Total Male Number', 'Total Female Number', 'Total Student Number',
+                'Exchange to Abroad', 'Exchange from Abroad', 'Professors', 'Assoc Prof', 'Phd', 'Base Point',
+                'Success Order', 'Preferred number', 'Quota', 'Placed Number', 'Total Correct TYT', 'Total Correct AYT',
+                'Total Correct YDT', 'TYT Turkish', 'TYT Math', 'TYT Science', 'TYT Social Science', 'AYT Math',
+                'AYT Physics', 'AYT Chemistry', 'AYT Biology', 'AYT Literature', 'AYT Geography1', 'AYT Geography2',
+                'AYT Religion', 'AYT Philosophy', 'AYT History1', 'AYT History2', 'YDT Foreign Language', 'Marmara',
+                'Aegean', 'Mediterranean', 'Black Sea', 'Central Anatolia', 'Eastern Anatolia', 'Southeastern Anatolia']
 
-    # NaN değerlerini 0 ile doldurma
-    data[tyt_columns] = data[tyt_columns].fillna(0)
-    data[ayt_columns] = data[ayt_columns].fillna(0)
-    data[ydt_columns] = data[ydt_columns].fillna(0)
-
-    # Correct answers ayrımı
-    data.loc[:, 'tyt_correct_answer'] = data[tyt_columns].sum(axis=1)
-    data.loc[:, 'ayt_correct_answer'] = data[ayt_columns].sum(axis=1)
-    data.loc[:, 'ydt_correct_answer'] = data[ydt_columns].sum(axis=1)
-
-    # Gruplama ve hesaplama türlerine göre dict
     aggregation_methods = {
-        'total_male_number': 'sum',
-        'total_female_number': 'sum',
-        'total_student_number_': 'sum',
-        'professors': 'sum',
-        'assoc_prof': 'sum',
-        'phd': 'sum',
-        'base_point': 'mean',  # Ortalama
-        'success_order': 'sum',
-        'preferred': 'sum',
-        'quota': 'sum',
-        'placed_number': 'sum',
-        'tyt_turkce': 'mean',  # Ortalama
-        'tyt_matematik': 'mean',
-        'tyt_fen': 'mean',
-        'tyt_sosyal': 'mean',
-        'ayt_matematik': 'mean',
-        'ayt_fizik': 'mean',
-        'ayt_kimya': 'mean',
-        'ayt_biyoloji': 'mean',
-        'ayt_edebiyat': 'mean',
-        'ayt_cografya1': 'mean',
-        'ayt_cografya2': 'mean',
-        'ayt_din': 'mean',
-        'ayt_felsefe': 'mean',
-        'ayt_tarih1': 'mean',
-        'ayt_tarih2': 'mean',
-        'ydt_yabanci_dil': 'mean',  # Ortalama
+        'Male': 'sum',
+        'Female': 'sum',
+        'Total Male Number': 'sum',
+        'Total Female Number': 'sum',
+        'Total Student Number': 'sum',
+        'Exchange to Abroad': 'sum',
+        'Exchange from Abroad': 'sum',
+        'Professors': 'sum',
+        'Assoc Prof': 'sum',
+        'Phd': 'sum',
+        'Base Point': 'mean',  # Average
+        'Success Order': 'sum',
+        'Preferred number': 'sum',
+        'Quota': 'sum',
+        'Placed Number': 'sum',
+        'Total Correct TYT': 'mean',  # Average
+        'Total Correct AYT': 'mean',
+        'Total Correct YDT': 'mean',
+        'TYT Turkish': 'mean',
+        'TYT Math': 'mean',
+        'TYT Science': 'mean',
+        'TYT Social Science': 'mean',
+        'AYT Math': 'mean',
+        'AYT Physics': 'mean',
+        'AYT Chemistry': 'mean',
+        'AYT Biology': 'mean',
+        'AYT Literature': 'mean',
+        'AYT Geography1': 'mean',
+        'AYT Geography2': 'mean',
+        'AYT Religion': 'mean',
+        'AYT Philosophy': 'mean',
+        'AYT History1': 'mean',
+        'AYT History2': 'mean',
+        'YDT Foreign Language': 'mean',
         'Marmara': 'sum',
-        'Ege': 'sum',
-        'Akdeniz': 'sum',
-        'Karadeniz': 'sum',
-        'Ic_Anadolu': 'sum',
-        'Dogu_Anadolu': 'sum',
-        'Guney_Dogu_Anadolu': 'sum',
-        'tyt_correct_answer': 'mean',  # Ortalama
-        'ayt_correct_answer': 'mean',
-        'ydt_correct_answer': 'mean'
+        'Aegean': 'sum',
+        'Mediterranean': 'sum',
+        'Black Sea': 'sum',
+        'Central Anatolia': 'sum',
+        'Eastern Anatolia': 'sum',
+        'Southeastern Anatolia': 'sum'
     }
 
-    # Yıl bazında gruplama yapma
-    year_data = data.groupby(['year']).agg(aggregation_methods).reset_index()
+    year_data = data.groupby(['Year']).agg(aggregation_methods).reset_index()
 
-    # Yüzdelik değişim hesaplama (pct_change)
     for col in columns_to_analyze:
         if col in year_data.columns:
             year_data[f'{col} Change (%)'] = year_data[col].pct_change() * 100
@@ -411,12 +383,15 @@ def year_analysis(data):
     change_columns = [f'{col} Change (%)' for col in columns_to_analyze]
 
     # Sonuçları döndürme
-    selected_columns_with_change = ['year'] + change_columns
+    selected_columns_with_change = ['Year'] + change_columns
 
     return year_data[selected_columns_with_change]
 
+# Years = year_analysis(df)
+# print(Years)
+# Years.to_csv("ytu_yearly_per_change.csv", index=False)
 
-def plot_yearly_trend_handling_missing(data, metric, group_column='department_name', top_n=10):
+def plot_yearly_trend_handling_missing(data, metric, group_column='Department Name', top_n=10):
     """
     Plots yearly trends for exactly `top_n` groups, handling missing data gracefully.
 
@@ -430,7 +405,7 @@ def plot_yearly_trend_handling_missing(data, metric, group_column='department_na
     - None: Displays the plots.
     """
     # Analyze data by years for the specified metric
-    yearly_analysis = data.groupby(['year', group_column])[metric].mean().unstack()
+    yearly_analysis = data.groupby(['Year', group_column])[metric].mean().unstack()
 
     # Dynamically determine top and bottom groups based on maximum change
     group_max_change = data.groupby(group_column)[metric].max()
@@ -469,7 +444,10 @@ def plot_yearly_trend_handling_missing(data, metric, group_column='department_na
     plt.show()
 
 
-def analyze_and_plot_regional_distribution(data, region_columns, year_column='year'):
+# plot_yearly_trend_handling_missing(df2, metric='Exchange to Abroad')
+
+
+def analyze_and_plot_regional_distribution(data, region_columns, year_column='Year'):
     """
     Analyzes regional student representation and plots all years on a single grouped bar chart.
 
@@ -510,8 +488,14 @@ def analyze_and_plot_regional_distribution(data, region_columns, year_column='ye
     # Return the yearly regional totals
     return yearly_regional_totals
 
+"""
+ analyze_and_plot_regional_distribution(df2, region_columns= ['Marmara',
+                 'Aegean', 'Mediterranean', 'Black Sea', 'Central Anatolia', 'Eastern Anatolia',
+                                                              'Southeastern Anatolia'])
+"""
 
-def analyze_and_visualize_performance(data, column='tyt_matematik', top_n=5):
+
+def analyze_and_visualize_performance(data, column='TYT Math', top_n=5, department_type=None):
     """
     Analyzes and visualizes gender representation in the specified column.
 
@@ -519,6 +503,7 @@ def analyze_and_visualize_performance(data, column='tyt_matematik', top_n=5):
         data (DataFrame): The dataset containing gender and performance columns.
         column (str): The column name for the performance metric to analyze.
         top_n (int): Number of top departments to analyze.
+        department_type (str): Filter for department type (e.g., 'SAY', 'EA', 'SÖZ').
 
     Returns:
         None: Displays a bar chart of male and female percentages for the top departments.
@@ -526,11 +511,17 @@ def analyze_and_visualize_performance(data, column='tyt_matematik', top_n=5):
     if column not in data.columns:
         raise ValueError(f"The column '{column}' does not exist in the dataset.")
 
+    # Filter by department type if specified
+    if department_type:
+        data = data[data['Department Type'] == department_type]
+        if data.empty:
+            raise ValueError(f"No data available for department type '{department_type}'.")
+
     # Calculate average scores for each department
-    department_avg = data.groupby('department_name').agg(
+    department_avg = data.groupby('Department Name').agg(
         avg_score=(column, 'mean'),
-        total_male=('male', 'sum'),
-        total_female=('female', 'sum')
+        total_male=('Male', 'sum'),
+        total_female=('Female', 'sum')
     ).reset_index()
 
     # Calculate percentages for males and females
@@ -543,7 +534,7 @@ def analyze_and_visualize_performance(data, column='tyt_matematik', top_n=5):
 
     # Append average score to department names for labeling
     top_departments['department_label'] = top_departments.apply(
-        lambda row: f"{row['department_name']} ({row['avg_score']:.2f})", axis=1
+        lambda row: f"{row['Department Name']} ({row['avg_score']:.2f})", axis=1
     )
 
     # Replace underscores with spaces in the column name for the title
@@ -560,7 +551,8 @@ def analyze_and_visualize_performance(data, column='tyt_matematik', top_n=5):
     # Adding labels and title
     ax.set_xlabel('Department')
     ax.set_ylabel('Percentage')
-    ax.set_title(f'Male vs Female Percentage in Top {top_n} Departments by {column_title.capitalize()}')
+    ax.set_title(f'Male vs Female Percentage in Top {top_n} Departments by {column_title.capitalize()}' +
+                 (f" ({department_type})" if department_type else ""))
     ax.set_xticks(x)
     ax.set_xticklabels(top_departments['department_label'], rotation=45, ha='right')
     ax.legend()
@@ -580,7 +572,7 @@ def analyze_and_visualize_performance(data, column='tyt_matematik', top_n=5):
 """
 # Apply the function with the correct column name and updated formatting
 try:
-    analyze_and_visualize_performance(df2, column='total_correct_ydt', top_n=5)
+    analyze_and_visualize_performance(df2, column='Total Correct AYT', top_n=5)
 except ValueError as e:
     print(e)
 """
@@ -596,7 +588,8 @@ def analyze_base_point_correlations(data):
     Returns:
         pd.DataFrame: Correlation matrix of factors influencing base points.
     """
-    factors = ['base_point', 'success_order', 'quota', 'preferred', 'professors', 'phd', 'assoc_prof']
+    factors = ['Base Point', 'Success Order', 'Preferred number', 'Marmara',
+                'Aegean', 'Mediterranean', 'Black Sea', 'Central Anatolia', 'Eastern Anatolia', 'Southeastern Anatolia']
     correlation_matrix = data[factors].corr()
     print("Correlation Matrix for Base Points:")
     print(correlation_matrix)
@@ -607,6 +600,9 @@ def analyze_base_point_correlations(data):
     plt.show()
 
     return correlation_matrix
+
+
+# analyze_base_point_correlations(df2)
 
 
 def analyze_by_department_type(data, columns):
@@ -621,9 +617,9 @@ def analyze_by_department_type(data, columns):
         None: Displays visualizations.
     """
     # Group data by department type and calculate average scores and gender distribution
-    department_type_analysis = data.groupby('department_type').agg(
-        total_male=('male', 'sum'),
-        total_female=('female', 'sum'),
+    department_type_analysis = data.groupby('Department Type').agg(
+        total_male=('Male', 'sum'),
+        total_female=('Female', 'sum'),
         **{f'avg_{col}': (col, 'mean') for col in columns}
     ).reset_index()
 
@@ -642,10 +638,10 @@ def analyze_by_department_type(data, columns):
     for col in columns:
         col_avg = f'avg_{col}'
         fig, ax = plt.subplots(figsize=(10, 6))
-        bars_male = ax.bar(department_type_analysis['department_type'],
+        bars_male = ax.bar(department_type_analysis['Department Type'],
                            department_type_analysis['male_percentage'],
                            label='Male %', alpha=0.7)
-        bars_female = ax.bar(department_type_analysis['department_type'],
+        bars_female = ax.bar(department_type_analysis['Department Type'],
                              department_type_analysis['female_percentage'],
                              bottom=department_type_analysis['male_percentage'],
                              label='Female %', alpha=0.7)
@@ -666,57 +662,11 @@ def analyze_by_department_type(data, columns):
         plt.show()
 
 
-columns_to_analyze_by_type = ['total_correct_tyt', 'total_correct_ayt', 'total_correct_ydt', 'tyt_matematik']
-
-
+# columns_to_analyze_by_type = ['Total Correct TYT', 'Total Correct AYT', 'Total Correct YDT']
 # analyze_by_department_type(df2, columns_to_analyze_by_type)
 
 
-def analyze_academic_staff_impact(data, staff_columns, preference_column='preferred'):
-    """
-    Analyzes the correlation between academic staff numbers and student preferences.
-
-    Parameters:
-        data (DataFrame): The dataset containing academic staff and preference columns.
-        staff_columns (list): Columns representing academic staff counts (e.g., professors, assoc_prof).
-        preference_column (str): Column representing student preference counts.
-
-    Returns:
-        None: Displays scatter plots and correlation coefficients.
-    """
-    for staff_col in staff_columns:
-        if staff_col not in data.columns or preference_column not in data.columns:
-            print(f"Column '{staff_col}' or '{preference_column}' not found in the dataset.")
-            continue
-
-        # Calculate correlation
-        valid_data = data[[staff_col, preference_column]].dropna()
-        if valid_data.empty:
-            print(f"No valid data for {staff_col} and {preference_column}.")
-            continue
-
-        correlation, p_value = pearsonr(valid_data[staff_col], valid_data[preference_column])
-
-        # Display scatter plot with regression line
-        plt.figure(figsize=(8, 6))
-        sns.regplot(x=staff_col, y=preference_column, data=valid_data, scatter_kws={"alpha": 0.5}, line_kws={"color": "red"})
-        plt.title(f"Correlation Between {staff_col.capitalize()} and {preference_column.capitalize()} (r = {correlation:.2f})")
-        plt.xlabel(staff_col.replace('_', ' ').capitalize())
-        plt.ylabel(preference_column.replace('_', ' ').capitalize())
-        plt.tight_layout()
-        plt.show()
-
-        print(f"Correlation between {staff_col} and {preference_column}: r = {correlation:.2f}, p = {p_value:.4f}")
-
-
-# Columns representing academic staff
-staff_columns = ['professors', 'assoc_prof', 'phd']
-
-# Perform the analysis
-# analyze_academic_staff_impact(df2, staff_columns)
-
-
-def plot_beyond_exchange_factors(data, factors, target='preferred'):
+def plot_beyond_exchange_factors(data, factors, target='Exchange to Abroad'):
     """
     Plots the correlation of factors beyond exchange program participation with preferences.
 
@@ -744,44 +694,9 @@ def plot_beyond_exchange_factors(data, factors, target='preferred'):
     plt.show()
 
 
-# Call the function with relevant parameters
-factors_beyond_exchange = [
-    'base_point', 'success_order', 'quota', 'placed_number',
-    'professors', 'assoc_prof', 'phd',
-    'total_correct_tyt'
+factors_beyond_exchange = ['Professors', 'Assoc Prof', 'Phd', 'Base Point',
+                'Success Order', 'Preferred number', 'Quota', 'Placed Number', 'Total Correct TYT', 'Total Correct AYT'
 ]
 
 # plot_beyond_exchange_factors(df2, factors_beyond_exchange)
 
-
-def plot_top_bottom_departments(data, metric, top_n=5):
-    """
-    Plots the top and bottom N departments by a specified metric percentage change.
-
-    Parameters:
-    data (DataFrame): The input DataFrame containing department data.
-    metric (str): The column name for the metric to analyze (e.g., "tyt_correct_answer Change (%)").
-    top_n (int): The number of top and bottom departments to display (default is 5).
-    """
-    # Sort the data by the selected metric
-    top_departments = data.sort_values(metric, ascending=False).head(top_n)
-    bottom_departments = data.sort_values(metric).head(top_n)
-
-    # Clean the metric name for the title
-    metric_title = metric.replace("_", " ")
-
-    # Plot the top and bottom departments
-    plt.figure(figsize=(12, 6))
-    plt.barh(top_departments["department_name"], top_departments[metric], color='green', label='Highest % Increase')
-    plt.barh(bottom_departments["department_name"], bottom_departments[metric], color='red', label='Highest % Decrease')
-
-    plt.title(f"Top {top_n} and Bottom {top_n} Departments by {metric_title}")
-    plt.xlabel("Percentage Change (%)")
-    plt.ylabel("Department Name")
-    plt.legend()
-    plt.grid(True)
-    plt.show()
-
-
-# Call the function for the "tyt_correct_answer Change (%)" metric
-plot_top_bottom_departments(df_dep_change, "total_student_number_ Change (%)")

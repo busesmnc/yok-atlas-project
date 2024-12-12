@@ -6,27 +6,15 @@ pd.set_option('display.width', None)
 pd.set_option('display.max_rows', None)
 pd.set_option('display.float_format', lambda x: '%.3f' % x)
 
-csv_file_path = "ytu_general_analysis.csv"
-csv_file_path_dep_gen = "z_department_gender_change.csv"
-csv_file_path_dep_acd = "z_department_academic_changes.csv"
-csv_file_path_dep_tyt = "z_department_tyt_ayt_ydt_changes"
-csv_file_path_fac_gen = "z_faculty_gender_change.csv"
-csv_file_path_fac_acd = "z_faculty_academic_changes.csv"
-csv_file_path_fac_tyt = "z_faculty_tyt_ayt_ydt_changes"
-csv_file_path_ytu_gen = "z_ytu_gender_change.csv"
-csv_file_path_ytu_acd = "z_ytu_academic_changes_"
-csv_file_path_ytu_tyt = "z_ytu_tyt_ayt_ydt_changes"
+csv_file_path = "YTU_General_Data.csv"
+csv_file_path_dep = "z_department_gender_academic_tyt_change.csv"
+csv_file_path_fac = "z_faculty_gender_academic_tyt_change.csv"
+csv_file_path_dep_gen = "ytu_department_yearly_per_change"
 
 df = pd.read_csv(csv_file_path)
 df_dep_gen = pd.read_csv(csv_file_path_dep_gen)
-df_dep_acd = pd.read_csv(csv_file_path_dep_acd)
-df_dep_tyt = pd.read_csv(csv_file_path_dep_tyt)
-df_fac_gen = pd.read_csv(csv_file_path_fac_gen)
-df_fac_acd = pd.read_csv(csv_file_path_fac_acd)
-df_fac_tyt = pd.read_csv(csv_file_path_fac_tyt)
-df_ytu_gen = pd.read_csv(csv_file_path_ytu_gen)
-df_ytu_acd = pd.read_csv(csv_file_path_ytu_acd)
-df_ytu_tyt = pd.read_csv(csv_file_path_ytu_tyt)
+df_dep_ac_gen_tyt = pd.read_csv(csv_file_path_dep)
+df_fac_ac_gen_tyt = pd.read_csv(csv_file_path_fac)
 
 
 def gender_change_analysis(dataframe, group_col):
@@ -41,19 +29,22 @@ def gender_change_analysis(dataframe, group_col):
         pd.DataFrame: Gruplama sütununa ve yıla göre sıralı toplam cinsiyet, sayısal değişim ve yüzdesel değişimleri içeren tablo.
     """
     # Yıllara göre toplam kadın ve erkek sayılarını hesapla
-    yearly_totals = dataframe.groupby([group_col, 'year'])[['total_male_number', 'total_female_number']].sum().reset_index()
+    yearly_totals = dataframe.groupby([group_col, 'Year'])[['Total Male Number', 'Total Female Number']].sum().reset_index()
 
     # Erkek ve kadın değişimlerini hesapla
-    yearly_totals['male_change'] = yearly_totals.groupby(group_col)['total_male_number'].diff().fillna(0)
-    yearly_totals['male_percentage_change'] = yearly_totals.groupby(group_col)['total_male_number'].pct_change().fillna(0) * 100
+    yearly_totals['Male Change'] = yearly_totals.groupby(group_col)['Total Male Number'].diff().fillna(0)
+    yearly_totals['Male Percentage Change'] = yearly_totals.groupby(group_col)['Total Male Number'].pct_change().fillna(0) * 100
 
-    yearly_totals['female_change'] = yearly_totals.groupby(group_col)['total_female_number'].diff().fillna(0)
-    yearly_totals['female_percentage_change'] = yearly_totals.groupby(group_col)['total_female_number'].pct_change().fillna(0) * 100
+    yearly_totals['Male Change'] = yearly_totals.groupby(group_col)['Total Female Number'].diff().fillna(0)
+    yearly_totals['Female Percentage Change'] = yearly_totals.groupby(group_col)['Total Female Number'].pct_change().fillna(0) * 100
 
     # Sıralı tablo oluştur
-    sorted_table = yearly_totals.sort_values(by=[group_col, 'year']).reset_index(drop=True)
+    sorted_table = yearly_totals.sort_values(by=[group_col, 'Year']).reset_index(drop=True)
 
     return sorted_table
+
+# ab = gender_change_analysis(df, group_col="Faculty Name")
+# print(ab)
 
 
 def ytu_gender_changes(data):
@@ -87,7 +78,7 @@ def ytu_gender_changes(data):
     return gender_data
 
 
-def analyze_academic_changes(data, group_by='department_name'):
+def analyze_academic_changes(data, group_by='Department Name'):
     """
     Yıllara göre akademik değişiklikleri analiz eden bir fonksiyon.
 
@@ -100,30 +91,32 @@ def analyze_academic_changes(data, group_by='department_name'):
     """
 
     # Yerleşen öğrenci sayısını hesaplama
-    data['placed_students'] = data['male'] + data['female']
+    data['Placed Number'] = data['Male'] + data['Female']
 
     # Veriyi gruplama ve toplamları hesaplama
-    grouped_data = data.groupby([group_by, 'year']).agg({
-        'quota': 'sum',  # Kontenjan toplamı
-        'preferred': 'sum',  # Tercih edilme toplamı
-        'placed_students': 'sum',  # Yerleşen öğrenci toplamı
-        'professors': 'sum',  # Profesör sayısı toplamı
-        'phd': 'sum',  # Doktora sahibi personel toplamı
-        'assoc_prof': 'sum'  # Doçent sayısı toplamı
+    grouped_data = data.groupby([group_by, 'Year']).agg({
+        'Quota': 'sum',  # Kontenjan toplamı
+        'Preferred number': 'sum',  # Tercih edilme toplamı
+        'Placed Number': 'sum',  # Yerleşen öğrenci toplamı
+        'Professors': 'sum',  # Profesör sayısı toplamı
+        'Phd': 'sum',  # Doktora sahibi personel toplamı
+        'Assoc Prof': 'sum'  # Doçent sayısı toplamı
     }).reset_index()
 
     # Değişim hesaplamaları
-    for col in ['quota', 'preferred', 'placed_students', 'professors', 'phd', 'assoc_prof']:
+    for col in ['Quota', 'Preferred number', 'Placed Number', 'Professors', 'Phd', 'Assoc Prof']:
         grouped_data[f'{col.capitalize()} Change'] = grouped_data.groupby(group_by)[col].diff()
         grouped_data[f'{col.capitalize()} Change (%)'] = grouped_data.groupby(group_by)[col].pct_change() * 100
 
-    # Sıralama
-    if group_by == 'department_name':
-        grouped_data.sort_values(by=['department_name', 'year'], ascending=[True, True], inplace=True)
+    if group_by == 'Department Name':
+        grouped_data.sort_values(by=['Department Name', 'Year'], ascending=[True, True], inplace=True)
     else:
-        grouped_data.sort_values(by=['faculty_name', 'year'], ascending=[True, True], inplace=True)
+        grouped_data.sort_values(by=['Faculty Name', 'Year'], ascending=[True, True], inplace=True)
 
     return grouped_data
+
+# cd = analyze_academic_changes(df, group_by='Faculty Name')
+# print(cd)
 
 
 def ytu_analyze_academic_changes(data):
@@ -161,7 +154,7 @@ def ytu_analyze_academic_changes(data):
     return yearly_totals
 
 
-def analyze_base_point_changes(data, group_by='faculty_name', department_type=None):
+def analyze_base_point_changes(data, group_by='Faculty Name', department_type=None):
     """
     TYT, AYT ve YDT başarılarını, correct answers ayrımı ile yıllara göre analiz eder.
 
@@ -174,21 +167,6 @@ def analyze_base_point_changes(data, group_by='faculty_name', department_type=No
     - pd.DataFrame: Yıllık analiz tablosu, artış/azalış ve yüzdelik değişimlerle birlikte.
     """
 
-    # TYT, AYT ve YDT ile başlayan sütunları bulma
-    tyt_columns = [col for col in data.columns if col.startswith('tyt')]
-    ayt_columns = [col for col in data.columns if col.startswith('ayt')]
-    ydt_columns = [col for col in data.columns if col.startswith('ydt')]
-
-    # NaN değerlerini 0 ile doldurma
-    data[tyt_columns] = data[tyt_columns].fillna(0)
-    data[ayt_columns] = data[ayt_columns].fillna(0)
-    data[ydt_columns] = data[ydt_columns].fillna(0)
-
-    # Correct answers ayrımı
-    data['tyt_correct_answer'] = data[tyt_columns].sum(axis=1)
-    data['ayt_correct_answer'] = data[ayt_columns].sum(axis=1)
-    data['ydt_correct_answer'] = data[ydt_columns].sum(axis=1)
-
     # group_by string ise listeye çevir
     if isinstance(group_by, str):
         group_by = [group_by]
@@ -196,17 +174,16 @@ def analyze_base_point_changes(data, group_by='faculty_name', department_type=No
     # Bölüm türü filtresi
     if department_type:
         normalized_department_type = department_type.strip().lower()
-        data = data[data['department_type'].str.strip().str.lower() == normalized_department_type].copy()
+        data = data[data['Department Type'].str.strip().str.lower() == normalized_department_type].copy()
 
     # Analiz sütunlarını belirleme
-    columns_to_analyze = ['base_point', 'success_order', 'tyt_correct_answer',
-                          'ayt_correct_answer', 'ydt_correct_answer']
+    columns_to_analyze = ['Base Point', 'Success Order', 'Total Correct TYT', 'Total Correct AYT', 'Total Correct YDT']
 
     # Gruplama fonksiyonu seçimi
-    aggregation_function = 'mean' if 'faculty_name' in group_by else 'sum'
+    aggregation_function = 'mean' if 'Faculty Name' in group_by else 'sum'
 
     # Gruplama ve analiz
-    grouped_data = data.groupby(['year'] + group_by).agg({
+    grouped_data = data.groupby(['Year'] + group_by).agg({
         col: aggregation_function for col in columns_to_analyze
     }).reset_index()
 
@@ -216,14 +193,21 @@ def analyze_base_point_changes(data, group_by='faculty_name', department_type=No
         grouped_data[f'{col} Change (%)'] = grouped_data.groupby(group_by)[col].pct_change() * 100
 
     # Sonuçları sıralama
-    grouped_data.sort_values(by=group_by + ['year'], inplace=True)
+    grouped_data.sort_values(by=group_by + ['Year'], inplace=True)
 
     # Döndürülecek sütunlar
-    selected_columns = ['year'] + group_by + columns_to_analyze + \
+    selected_columns = ['Year'] + group_by + columns_to_analyze + \
                        [f'{col} Change' for col in columns_to_analyze] + \
                        [f'{col} Change (%)' for col in columns_to_analyze]
 
     return grouped_data[selected_columns]
+
+# ef = analyze_base_point_changes(df, group_by='Faculty Name')
+# print(ef)
+
+# merged_table = pd.concat([ab, cd.drop(columns=['Faculty Name', 'Year']), ef.drop(columns=
+# ['Faculty Name', 'Year'])], axis=1)
+# merged_table.to_csv("z_faculty_gender_academic_tyt_change.csv", index=False)
 
 
 def ytu_analyze_base_point_changes(data):
