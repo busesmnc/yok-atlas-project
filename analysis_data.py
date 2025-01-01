@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import unicodedata
 import numpy as np
 import seaborn as sns
+from plotly import tools
 from scipy.stats import pearsonr
 
 pd.set_option('display.max_columns', 20)
@@ -200,8 +201,8 @@ subjects_to_compare2 = ['AYT Literature', 'AYT Geography1', 'AYT Geography2', 'A
 comparison_results2 = compare_subject_improvements(df, "EA", subjects_to_compare2)
 """
 
-
-def compare_math_programs_three_parts_no_legend(data):
+print(df.columns)
+def compare_math_programs(data):
     # Filter data for "Mathematical Engineering" and "Mathematical Engineering (English)"
     math_depts = data[
         data["Department Name"].str.contains("Mathematical Engineering", case=False, na=False)
@@ -275,6 +276,7 @@ def compare_math_programs_three_parts_no_legend(data):
     plot_group(columns_group_2, turkish_program, english_program)
     plot_group(columns_group_3, turkish_program, english_program)
 
+compare_math_programs(df_dep_change)
 
 # YILDIZ TEKNİK PER CHANGE GRAFİKLERİ
 """ 
@@ -644,6 +646,75 @@ def plot_students_per_academician_by_year(data):
 
 
 # Run the function to plot the charts for each year
-plot_students_per_academician_by_year(df)
+# plot_students_per_academician_by_year(df)
+
+# Revised function to include department names on the x-axis and exclude AYT Math
+# Function to calculate average yearly changes and display them with department names on the x-axis
+# Function to calculate average yearly changes and ensure department names on x-axis
+
 
 print(df.columns)
+
+#### 30.12.2024
+# net gelişimi
+
+# Final correction: Retain and properly align Department Names during calculations
+def calculate_and_display_changes_final_fixed(group_type, subjects, title):
+    # Filter data for the specific group
+    group_data = df[df['Department Type'] == group_type]
+
+    # Calculate year-over-year changes for the subjects
+    yearly_changes = group_data.groupby(['Department Name', 'Year'])[subjects].mean().reset_index()
+    yearly_changes['Department Name'] = yearly_changes['Department Name']  # Retain Department Name for alignment
+    yearly_changes_diff = yearly_changes.groupby('Department Name')[subjects].diff()
+    yearly_changes_diff['Department Name'] = yearly_changes['Department Name']  # Reattach Department Names
+
+    # Calculate the average yearly change for each department and subject
+    average_yearly_changes = yearly_changes_diff.groupby('Department Name').mean()
+
+    # Plot the changes with department names as x-axis labels
+    plt.figure(figsize=(20, 10))
+    for subject in subjects:
+        plt.bar(
+            x=average_yearly_changes.index,
+            height=average_yearly_changes[subject],
+            label=subject,
+            alpha=0.7
+        )
+
+    # Customize the chart
+    plt.title(title)
+    plt.ylabel("Average Yearly Score Change")
+    plt.xlabel("Departments")
+    plt.xticks(rotation=90, ha="right", fontsize=8)  # Rotate x-axis labels for visibility
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    plt.legend(title="Subjects")
+    plt.tight_layout()
+    plt.show()
+
+# Test the corrected function for SAY departments
+calculate_and_display_changes_final_fixed(
+    "SAY",
+    ['AYT Biology', 'AYT Physics', 'AYT Chemistry'],
+    "Average Yearly Score Changes for SAY Departments"
+)
+# EA Departments
+calculate_and_display_changes_final_fixed(
+    "EA",
+    ['AYT Literature', 'AYT History1', 'AYT Geography1'],
+    "Average Yearly Score Changes for EA Departments"
+)
+
+# SÖZ Departments
+calculate_and_display_changes_final_fixed(
+    "SÖZ",
+    ['AYT Literature', 'AYT Geography1', 'AYT Geography2', 'AYT Religion', 'AYT Philosophy', 'AYT History1', 'AYT History2'],
+    "Average Yearly Score Changes for SÖZ Departments"
+)
+
+# DİL Departments
+calculate_and_display_changes_final_fixed(
+    "DİL",
+    ['YDT Foreign Language'],
+    "Average Yearly Score Changes for DİL Departments"
+)

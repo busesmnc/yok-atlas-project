@@ -43,8 +43,8 @@ def gender_change_analysis(dataframe, group_col):
 
     return sorted_table
 
-# ab = gender_change_analysis(df, group_col="Faculty Name")
-# print(ab)
+ab = gender_change_analysis(df, group_col="Faculty Name")
+print(ab)
 
 
 def ytu_gender_changes(data):
@@ -354,4 +354,46 @@ def visualize_column_trends_by_year(data, metric, top_n=10):
 #                                                    metric='tyt_correct_answer', top_n=10)
 
 
+
+X = df[['Base Point']]  # Bağımsız değişken (Taban puanı)
+y = df['Preferred number']  # Bağımlı değişken (Tercih edilme oranı)
+
+
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+
+# Veriyi eğitim ve test setlerine ayırma
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Modeli oluşturma
+model = LinearRegression()
+
+# Modeli eğitme
+model.fit(X_train, y_train)
+
+# Modelin katsayılarını inceleme
+print(f"Katsayı: {model.coef_[0]}")
+print(f"Sabit: {model.intercept_}")
+
+from sklearn.metrics import mean_squared_error, r2_score
+
+# Test seti ile tahmin yapma
+y_pred = model.predict(X_test)
+
+# Model performansını değerlendirme
+mse = mean_squared_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
+
+print(f"Ortalama Kare Hatası (MSE): {mse}")
+print(f"Determinasyon Katsayısı (R2): {r2}")
+
+
+# Gerçek ve tahmin edilen değerlerin karşılaştırılması
+plt.scatter(X, y, color='blue', label='Gerçek Değerler')
+plt.plot(X, model.predict(X), color='red', label='Regresyon Çizgisi')
+plt.xlabel('Taban Puanı')
+plt.ylabel('Tercih Edilme Oranı')
+plt.title('Taban Puanı ve Tercih Edilme Oranı Arasındaki İlişki')
+plt.legend()
+plt.show()
 

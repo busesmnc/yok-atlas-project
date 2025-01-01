@@ -446,7 +446,7 @@ def plot_yearly_trend_handling_missing(data, metric, group_column='Department Na
 
 # plot_yearly_trend_handling_missing(df2, metric='Exchange to Abroad')
 
-
+# cod 1
 def analyze_and_plot_regional_distribution(data, region_columns, year_column='Year'):
     """
     Analyzes regional student representation and plots all years on a single grouped bar chart.
@@ -488,11 +488,10 @@ def analyze_and_plot_regional_distribution(data, region_columns, year_column='Ye
     # Return the yearly regional totals
     return yearly_regional_totals
 
-"""
- analyze_and_plot_regional_distribution(df2, region_columns= ['Marmara',
+analyze_and_plot_regional_distribution(df, region_columns= ['Marmara',
                  'Aegean', 'Mediterranean', 'Black Sea', 'Central Anatolia', 'Eastern Anatolia',
                                                               'Southeastern Anatolia'])
-"""
+
 
 
 def analyze_and_visualize_performance(data, column='TYT Math', top_n=5, department_type=None):
@@ -890,11 +889,10 @@ def plot_department_analysis_with_highest_subjects(data, department_type, analys
 # Example usage of the extended function with highest subject print:
 # i. SAY Departments: Comparison of AYT Math and AYT Biology scores over all years
 # plot_department_analysis_with_highest_subjects(df, 'DİL', 'scores',
-#                                                 subjects=['Total Correct TYT', 'Total Correct YDT'])
+#                                                subjects=['Total Correct TYT', 'Total Correct YDT'])
+# plot_department_analysis_with_highest_subjects(df, 'SAY', 'success_order')
 
-# plot_department_analysis_with_highest_subjects(df, 'EA', 'base_points')
-
-
+"""
 def plot_department_analysis_with_highest_and_lowest_subjects_and_year(data, department_type, analysis_type,
                                                                        subjects=None, year=None):
     # Filter data based on department type
@@ -977,12 +975,7 @@ def plot_department_analysis_with_highest_and_lowest_subjects_and_year(data, dep
 
     else:
         print("Invalid analysis type or missing parameters for the selected analysis.")
-
-
-# Example usage of the extended function with year-aware highest and lowest subject print:
-# SAY Departments: Comparison of AYT Math and AYT Biology scores over all years
-
-# Adjust the function to position the legend outside the plot area
+"""
 
 
 def plot_top_5_gender_changes_by_year(data):
@@ -1244,10 +1237,9 @@ plt.show()
 # DEP TÜRLERİ ARASI ANALİZ
 
 # 1 success order
+
 """
 all_department_names = df['Department Name'].str.replace(r' \(English\)', '', regex=True).unique()
-
-# Adjust categorization to include "Education" and "Other" as new groups
 final_department_groups = {
     "Engineering": [],
     "Sciences": [],
@@ -1255,7 +1247,7 @@ final_department_groups = {
     "Other": []
 }
 
-# Updated categorization logic for the new groups
+# Categorization logic
 for department in all_department_names:
     if any(keyword in department for keyword in ["Engineering", "Mechatronics", "Automation"]):
         final_department_groups["Engineering"].append(department)
@@ -1272,40 +1264,41 @@ for department in all_department_names:
     else:
         final_department_groups["Other"].append(department)
 
-# Move "Elementary Mathematics Education" from Sciences to Education
-if "Elementary Mathematics Education" in final_department_groups["Sciences"]:
-    final_department_groups["Sciences"].remove("Elementary Mathematics Education")
-    final_department_groups["Education"].append("Elementary Mathematics Education")
-
-print(final_department_groups)
-
-success_order_data = df[['Department Name', 'Success Order']].dropna()
-
-# Categorize each department based on the final groups
-success_order_data['Group'] = success_order_data['Department Name'].apply(
-    lambda dept: (
-        "Engineering" if dept.replace(' (English)', '') in final_department_groups["Engineering"] else
-        "Sciences" if dept.replace(' (English)', '') in final_department_groups["Sciences"] else
-        "Education" if dept.replace(' (English)', '') in final_department_groups["Education"] else
-        "Other"
+# Extract unique department names
+if 'Year' in df.columns:
+    data_2024 = df[df['Year'] == 2024][['Department Name', 'Success Order']].dropna()
+    data_2024['Group'] = data_2024['Department Name'].apply(
+        lambda dept: (
+            "Engineering" if dept.replace(' (English)', '') in final_department_groups["Engineering"] else
+            "Sciences" if dept.replace(' (English)', '') in final_department_groups["Sciences"] else
+            "Education" if dept.replace(' (English)', '') in final_department_groups["Education"] else
+            "Other"
+        )
     )
-)
+    # Convert Success Order to numeric and clean data
+    data_2024['Success Order'] = pd.to_numeric(data_2024['Success Order'], errors='coerce')
+    data_2024 = data_2024.dropna()
 
-# Convert Success Order to numeric
-success_order_data['Success Order'] = pd.to_numeric(success_order_data['Success Order'], errors='coerce')
+    # Add mean to box plot for 2024 data
+    plt.figure(figsize=(12, 6))
+    boxplot = data_2024.boxplot(by='Group', column=['Success Order'], grid=False, return_type='dict')
+    plt.title('Comparison of Success Order Across Fields 2024')
+    plt.suptitle('')
+    plt.xlabel('Group')
+    plt.ylabel('Success Order (Lower is Better)')
 
-# Filter out rows with missing or invalid data
-success_order_data = success_order_data.dropna()
+    # Calculate mean for each group and overlay on the box plot
+    group_means_2024 = data_2024.groupby('Group')['Success Order'].mean()
+    for i, group in enumerate(group_means_2024.index, start=1):
+        plt.scatter(i, group_means_2024[group], color='red', label='Mean' if i == 1 else '')
 
-# Box plot to compare success order across groups
-plt.figure(figsize=(12, 6))
-success_order_data.boxplot(by='Group', column=['Success Order'], grid=False)
-plt.title('Comparison of Success Order Across Groups')
-plt.suptitle('')
-plt.xlabel('Group')
-plt.ylabel('Success Order (Lower is Better)')
-plt.xticks([1, 2, 3, 4], ['Engineering', 'Sciences', 'Education', 'Other'])
-plt.show()
+    # Add legend for mean
+    plt.legend(loc='upper right')
+    plt.xticks([1, 2, 3, 4], ['Engineering', 'Sciences', 'Education', 'Other'])
+    plt.tight_layout()
+    plt.show()
+else:
+    print("Year column not found in the dataset.")
 """
 
 # 2 male female ?????
