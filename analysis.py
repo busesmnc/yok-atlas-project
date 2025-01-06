@@ -16,6 +16,8 @@ df_dep_gen = pd.read_csv(csv_file_path_dep_gen)
 df_dep_ac_gen_tyt = pd.read_csv(csv_file_path_dep)
 df_fac_ac_gen_tyt = pd.read_csv(csv_file_path_fac)
 
+cols = ["Department Name","Year",'Male', 'Female',"Total Student Number", "Quota", "Placed Number"]
+print(df[cols])
 
 def gender_change_analysis(dataframe, group_col):
     """
@@ -45,7 +47,6 @@ def gender_change_analysis(dataframe, group_col):
 
 ab = gender_change_analysis(df, group_col="Faculty Name")
 print(ab)
-
 
 def ytu_gender_changes(data):
 

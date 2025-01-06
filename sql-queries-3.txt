@@ -1,0 +1,74 @@
+SELECT
+    faculties.id AS 'Faculty ID',
+    faculties.faculty_name_en AS 'Faculty Name',
+    departments.id AS 'Department ID',
+    departments.department_name_en as 'Department Name',
+    departments.d_type AS  'Department Type',
+    total_student_number.year AS Year,
+    genders.male AS Male,
+    genders.female AS Female,
+    total_student_number.male AS  'Total Male Number',
+    total_student_number.female AS 'Total Female Number',
+    total_student_number.total_number AS 'Total Student Number',
+	exchange_program.leaving as 'Exchange to Abroad',
+	exchange_program.incoming as 'Exchange from Abroad',
+    academicians.proffesor AS Professors,
+    academicians.assoc_prof AS 'Assoc Prof',
+    academicians.phd AS Phd,
+    base_points.base_point AS 'Base Point',
+	success_orders.success_order as 'Success Order',
+	general_infos.prefered as 'Preferred number',
+	general_infos.quota as Quota,
+	general_infos.s_number as 'Placed Number',
+	Combined_Correct_Answers.total_correct_tyt as 'Total Correct TYT',
+	Combined_Correct_Answers.total_correct_ayt as 'Total Correct AYT',
+	Combined_Correct_Answers.total_correct_ydt as 'Total Correct YDT',
+    Combined_Correct_Answers.tyt_turkce AS 'TYT Turkish',
+    Combined_Correct_Answers.tyt_matematik AS 'TYT Math',
+    Combined_Correct_Answers.tyt_fen AS 'TYT Science',
+    Combined_Correct_Answers.tyt_sosyal AS 'TYT Social Science',
+    Combined_Correct_Answers.ayt_matematik AS 'AYT Math',
+    Combined_Correct_Answers.ayt_fizik  AS 'AYT Physics',
+    Combined_Correct_Answers.ayt_kimya  AS 'AYT Chemistry',
+    Combined_Correct_Answers.ayt_biyoloji AS 'AYT Biology',
+    Combined_Correct_Answers.ayt_edebiyat AS 'AYT Literature',
+    Combined_Correct_Answers.ayt_cografya1 AS 'AYT Geography1',
+    Combined_Correct_Answers.ayt_cografya2 AS 'AYT Geography2',
+    Combined_Correct_Answers.ayt_din AS 'AYT Religion',
+    Combined_Correct_Answers.ayt_felsefe AS 'AYT Philosophy',
+    Combined_Correct_Answers.ayt_tarih1 AS 'AYT History1',
+    Combined_Correct_Answers.ayt_tarih2 AS 'AYT History2',
+	Combined_Correct_Answers.ydt_yabanci_dil AS 'YDT Foreign Language',
+    COALESCE(SUM(CASE WHEN student_regions.region = 1 THEN student_regions.student_number ELSE 0 END), 0) AS Marmara,
+    COALESCE(SUM(CASE WHEN student_regions.region = 2 THEN student_regions.student_number ELSE 0 END), 0) AS Aegean,
+    COALESCE(SUM(CASE WHEN student_regions.region = 3 THEN student_regions.student_number ELSE 0 END), 0) AS Mediterranean,
+    COALESCE(SUM(CASE WHEN student_regions.region = 4 THEN student_regions.student_number ELSE 0 END), 0) AS 'Black Sea',
+    COALESCE(SUM(CASE WHEN student_regions.region = 5 THEN student_regions.student_number ELSE 0 END), 0) AS 'Central Anatolia',
+    COALESCE(SUM(CASE WHEN student_regions.region = 6 THEN student_regions.student_number ELSE 0 END), 0) AS 'Eastern Anatolia',
+    COALESCE(SUM(CASE WHEN student_regions.region = 7 THEN student_regions.student_number ELSE 0 END), 0) AS 'Southeastern Anatolia'
+FROM departments
+LEFT JOIN faculties ON departments.faculty_id = faculties.id
+LEFT JOIN genders ON departments.id = genders.department_id
+LEFT JOIN total_student_number ON departments.id = total_student_number.department_id
+    AND genders.year = total_student_number.year
+LEFT JOIN academicians ON departments.id = academicians.department_id
+    AND total_student_number.year = academicians.year
+LEFT JOIN base_points ON departments.id = base_points.department_id
+    AND total_student_number.year = base_points.year
+LEFT JOIN exchange_program ON departments.id = exchange_program.department_id
+    AND total_student_number.year = exchange_program.year
+LEFT JOIN success_orders ON departments.id = success_orders.department_id
+    AND total_student_number.year = success_orders.year
+LEFT JOIN general_infos ON departments.id = general_infos.department_id
+    AND total_student_number.year = general_infos.year
+LEFT JOIN Combined_Correct_Answers ON departments.id = Combined_Correct_Answers.department_id
+  AND total_student_number.year = Combined_Correct_Answers.year
+LEFT JOIN student_regions ON departments.id = student_regions.department_id
+ AND total_student_number.year = student_regions.year
+GROUP BY
+    faculties.id,
+    faculties.faculty_name,
+    departments.id,
+    departments.department_name,
+    departments.d_type,
+    total_student_number.year;

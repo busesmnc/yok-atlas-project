@@ -36,6 +36,10 @@ def analyze_department_data(data_frame, analysis_type):
     # Filter out TRNC Citizens rows
     filtered_data = data_frame[~data_frame['Department Name'].str.contains(r'\(TRNC Citizens\)', na=False)]
 
+    if analysis_type == "exchange":
+        # Exclude departments containing "TRNC"
+        filtered_data = filtered_data[~filtered_data['Department Name'].str.contains("TRNC", case=False, na=False)]
+
     # Identify language and base department
     filtered_data['Language'] = filtered_data['Department Name'].apply(
         lambda x: 'English' if '(English)' in x else 'Turkish'
@@ -47,6 +51,7 @@ def analyze_department_data(data_frame, analysis_type):
 
     # Perform analysis based on the specified type
     if analysis_type == "exchange":
+
         erasmus_percentage_summary = valid_departments.groupby('Language').agg(
             Total_Exchange_to_Abroad=('Exchange to Abroad', 'sum'),
             Total_Exchange_from_Abroad=('Exchange from Abroad', 'sum'),
@@ -186,6 +191,9 @@ def combined_analysis_fixed(data_frame, analysis_type):
         "Other": ["Architecture", "Design", "Political Science", "Relations", "Communication"]
     }
 
+    # Exclude departments containing "TRNC"
+    data_frame = data_frame[~data_frame['Department Name'].str.contains("TRNC", case=False, na=False)]
+
     # Categorize departments into fields
     def categorize_department(department):
         for field, keywords in field_categories.items():
@@ -193,9 +201,13 @@ def combined_analysis_fixed(data_frame, analysis_type):
                 return field
         return "Other"
 
+
+
     if analysis_type == "success_order":
         filtered_data = data_frame[data_frame['Year'] == 2024].copy()  # Create a deep copy
         filtered_data.loc[:, 'Field'] = filtered_data['Department Name'].apply(categorize_department)
+
+        print(filtered_data)
 
         # Select relevant columns and clean data
         success_order_data = filtered_data[['Field', 'Success Order']].dropna()
