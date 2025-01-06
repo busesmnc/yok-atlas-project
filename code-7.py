@@ -72,9 +72,9 @@ def department_analysis(data, group_by='Department Name', department_type=None, 
     return analysis_data[selected_columns_with_change]
 
 
-# dep_change = department_analysis(df)
+dep_change = department_analysis(df)
 # print(dep_change)
-# dep_change.to_csv("ytu_department_yearly_per_change.csv")
+dep_change.to_csv("ytu_department_yearly_per_change.csv")
 
 
 def faculty_analysis(data, faculty_name_column='Faculty Name', Year=None):
