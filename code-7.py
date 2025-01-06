@@ -74,7 +74,7 @@ def department_analysis(data, group_by='Department Name', department_type=None, 
 
 # dep_change = department_analysis(df)
 # print(dep_change)
-# dep_change.to_csv("ytu_department_yearly_per_change")
+# dep_change.to_csv("ytu_department_yearly_per_change.csv")
 
 
 def faculty_analysis(data, faculty_name_column='Faculty Name', Year=None):
@@ -177,7 +177,7 @@ def faculty_analysis(data, faculty_name_column='Faculty Name', Year=None):
 # fac_change = faculty_analysis(df)
 # fac_change_year = fac_change[fac_change['Year'] != 2021]
 # print(fac_change)
-# fac_change.to_csv("yut_faculty_yearly_per_change.csv")
+# fac_change.to_csv("ytu_faculty_yearly_per_change.csv")
 
 
 def year_analysis(data):
